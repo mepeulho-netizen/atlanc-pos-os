@@ -482,7 +482,7 @@ hr.soft{border:0;border-top:1px solid var(--line);margin:26px 0}
 /* ============================================================
    1. 기본 상수 · 유틸
    ============================================================ */
-const APP_VERSION = "1.1.0";
+const APP_VERSION = "1.2.0";
 const STORAGE_KEY = "atlanc_pos_v1";
 const SAMPLE_SEED = 20261125;
 
@@ -720,12 +720,14 @@ const SAMPLE_PROFILES = {
       { n: "백승호 디자이너", w: 0.14 }, { n: "임서아 디자이너", w: 0.12 }
     ]
   },
-  // 아뜰랑더블랙 압구정 (2026-10-16 오픈 · 프리미엄 매장 · 연습용 가상 수치)
+  // 아뜰랑더블랙 압구정 (2026-10-16 오픈 · 프리미엄 매장)
+  // 담당자 호칭은 실제 압구정 근무진(태원 원장·승빈 실장·범 디자이너·승기 디자이너),
+  // 비중은 2026-10-16~11-25 핸드SOS 시술 매출 비중(51% / 34% / 12% / 3%)을 따른 가상 수치
   apgujeong: {
     annual: 540000000, avg: 82000, newRate: 0.3, memberRate: 0.22, prepaidShare: 0.075, useShare: 0.065, priceMul: 1.35,
     designers: [
-      { n: "차유겸 원장", w: 0.3 }, { n: "강현도 실장", w: 0.24 }, { n: "정우석 디자이너", w: 0.2 },
-      { n: "노하람 디자이너", w: 0.16 }, { n: "배로운 디자이너", w: 0.1 }
+      { n: "태원 원장", w: 0.51 }, { n: "승빈 실장", w: 0.34 },
+      { n: "범 디자이너", w: 0.12 }, { n: "승기 디자이너", w: 0.03 }
     ]
   }
 };
@@ -920,14 +922,22 @@ function emptyMonth() {
     visits: new Set(), visitRows: 0, list: 0, disc: 0,
     newVisits: new Set(), reVisits: new Set(), etcVisits: new Set(),
     customers: new Set(), newCustomers: new Set(),
-    dz: {}, menu: {}, pay: { cash: 0, card: 0, bank: 0, pay: 0, etc: 0, credit: 0 },
+    dz: {}, dzPre: {}, menu: {}, pay: { cash: 0, card: 0, bank: 0, pay: 0, etc: 0, credit: 0 },
     day: {}, dayCash: {}, dayService: {}, dayVisitSet: {}, prepaidProducts: {}, gender: { "남": 0, "여": 0 }
   };
 }
 
 function ensureDz(M, name) {
-  if (!M.dz[name]) M.dz[name] = { rev: 0, visits: new Set(), cust: new Set(), newC: new Set() };
+  if (!M.dz[name]) M.dz[name] = {
+    rev: 0, real: 0, svc: 0, pt: 0, pre: 0,
+    visits: new Set(), cust: new Set(), newC: new Set()
+  };
   return M.dz[name];
+}
+function ensureDzPre(M, name) {
+  if (!M.dzPre) M.dzPre = {};
+  if (!M.dzPre[name]) M.dzPre[name] = { sale: 0, count: 0 };
+  return M.dzPre[name];
 }
 
 function aggregate(rows) {
@@ -971,7 +981,9 @@ function aggregate(rows) {
       else M.etcVisits.add(vid);
 
       const dz = ensureDz(M, r.dz || "(미지정)");
-      dz.rev += r.paid; dz.visits.add(vid); dz.cust.add(ckey);
+      dz.rev += r.paid; dz.real += paySum; dz.pre += pre;
+      if (r.kn === "점판") dz.pt += r.paid; else dz.svc += r.paid;
+      dz.visits.add(vid); dz.cust.add(ckey);
       if (r.visit === "신규") dz.newC.add(ckey);
 
       const m = M.menu[r.menu] || (M.menu[r.menu] = { rev: 0, count: 0 });
@@ -986,6 +998,8 @@ function aggregate(rows) {
       M.preconSale += r.paid;
       M.rev += r.paid;
       M.preconCount++;
+      const dp = ensureDzPre(M, r.dz || "(미지정)");
+      dp.sale += r.paid; dp.count++;
       const p = M.prepaidProducts[r.menu] || (M.prepaidProducts[r.menu] = { count: 0, rev: 0 });
       p.count++; p.rev += r.paid;
       M.pay.cash += r.cash; M.pay.card += r.card; M.pay.bank += r.bank;
@@ -1034,7 +1048,7 @@ function monthMetrics(agg, bid, mk) {
     discountRate: M.list ? M.disc / M.list : 0,
     cardPay: M.pay.card + M.pay.pay,
     cashPay: M.pay.cash, bankPay: M.pay.bank,
-    dz: M.dz, menu: M.menu, gender: M.gender, pay: M.pay, day: M.day, dayCash: M.dayCash,
+    dz: M.dz, dzPre: M.dzPre || {}, menu: M.menu, gender: M.gender, pay: M.pay, day: M.day, dayCash: M.dayCash,
     dayService: M.dayService, dayVisits: (() => { const o = {}; Object.keys(M.dayVisitSet).forEach(d => { o[d] = M.dayVisitSet[d].size; }); return o; })(),
     prepaidProducts: M.prepaidProducts,
     topDesigner: (() => {
@@ -1051,10 +1065,18 @@ function hqMetrics(agg, mk) {
   if (!parts.length) return null;
   const sum = k => parts.reduce((a, p) => a + (p[k] || 0), 0);
   const dz = {};
+  const dzPre = {};
   parts.forEach(p => Object.entries(p.dz).forEach(([n, d]) => {
     const key = p.bid + "·" + n;
-    if (!dz[key]) dz[key] = { rev: 0, visits: new Set(), cust: new Set(), newC: new Set() };
-    dz[key].rev += d.rev; d.visits.forEach(v => dz[key].visits.add(v)); d.cust.forEach(c => dz[key].cust.add(c));
+    if (!dz[key]) dz[key] = { rev: 0, real: 0, svc: 0, pt: 0, pre: 0, visits: new Set(), cust: new Set(), newC: new Set() };
+    dz[key].rev += d.rev; dz[key].real += d.real || 0; dz[key].svc += d.svc || 0;
+    dz[key].pt += d.pt || 0; dz[key].pre += d.pre || 0;
+    d.visits.forEach(v => dz[key].visits.add(v)); d.cust.forEach(c => dz[key].cust.add(c));
+  }));
+  parts.forEach(p => Object.entries(p.dzPre || {}).forEach(([n, d]) => {
+    const key = p.bid + "·" + n;
+    if (!dzPre[key]) dzPre[key] = { sale: 0, count: 0 };
+    dzPre[key].sale += d.sale; dzPre[key].count += d.count;
   }));
   const avgTicket = sum("visits") ? sum("service") / sum("visits") : 0;
   const menu = {}, gender = { "남": 0, "여": 0 }, prepaidProducts = {};
@@ -1083,7 +1105,7 @@ function hqMetrics(agg, mk) {
     reRateByVisit: sum("visits") ? sum("reVisits") / sum("visits") : 0,
     newRateByCust: sum("uniqueCust") ? sum("newCust") / sum("uniqueCust") : 0,
     discountRate: listSum ? discSum / listSum : 0,
-    dz, menu, gender, pay: {
+    dz, dzPre, menu, gender, pay: {
       cash: sum("cashPay"), card: parts.reduce((a, p) => a + p.cardPay, 0), bank: sum("bankPay")
     },
     day: {}, prepaidProducts,
@@ -1528,6 +1550,9 @@ function parseWorkbookMatrix(matrix, fallbackBranch) {
     const paid = toNumber(get("paid"));
     const list = toNumber(get("list")) || paid;
     const isPrepaid = /정액|충전|회원권/.test(kindRaw) || /회원$|회원권/.test(menu);
+    /* 구분을 3종으로 유지: 시술 / 점판(제품) / 정액(정액권 판매)
+       핸드SOS 담당자별 매출처럼 담당자별 시술·점판·정액권을 따로 맞추려면 구분이 필요하다. */
+    const isProduct = !isPrepaid && /점판|제품|소모/.test(kindRaw);
     if (!paid && !list) { skipped++; continue; }
     const timeRaw = String(get("time") || "").trim();
     let time = "";
@@ -1540,7 +1565,7 @@ function parseWorkbookMatrix(matrix, fallbackBranch) {
     const rowBranch = findBranchFromName(branchCell) || fallbackBranch || "";
     rows.push({
       d: date, t: time, b: rowBranch, n: name, g: gender,
-      k: isPrepaid ? "정액" : "시술",
+      k: isPrepaid ? "정액" : "시술", kn: isPrepaid ? "정액" : isProduct ? "점판" : "시술",
       menu: menu || (isPrepaid ? "정액권" : "기타"),
       detail, dz: String(get("designer") || "미지정").trim() || "미지정",
       list, disc: toNumber(get("disc")), paid: paid || list,
@@ -1976,59 +2001,79 @@ function viewDesigner() {
     return h;
   }
 
-  const rows = Object.entries(m.dz).map(([n, d]) => {
-    const p = prev && prev.dz[n];
+  /* 담당자별 = 시술·점판·정액권을 구분해 잡는다 (핸드SOS 담당자별 매출 상세와 같은 기준)
+     - 시술 매출 = 그 담당자의 시술 결제액 합계(발생, 정액권 결제분 포함)
+     - 점판 매출 = 제품 판매 결제액 합계
+     - 정액권 사용 = 시술·점판 중 정액권으로 결제된 금액
+     - 실매출 = 실제 수납(현금+카드+통장+Pay+기타+외상)
+     - 정액권 판매 = 그 담당자 이름으로 팔린 정액권 금액(선수금) */
+  const names = Array.from(new Set(Object.keys(m.dz).concat(Object.keys(m.dzPre || {}))));
+  const rows = names.map(n => {
+    const d = m.dz[n];
+    const sale = (m.dzPre || {})[n];
+    const p = prev && prev.dz ? prev.dz[n] : null;
+    const svc = d ? d.svc : 0, pt = d ? d.pt : 0, pre = d ? d.pre : 0, real = d ? d.real : 0;
+    const visits = d ? d.visits.size : 0, cust = d ? d.cust.size : 0, newC = d ? d.newC.size : 0;
     return {
-      n, rev: d.rev, visits: d.visits.size, cust: d.cust.size, newC: d.newC.size,
-      avgTicket: d.visits.size ? d.rev / d.visits.size : 0,
+      n, svc, pt, pre, real, sale: sale ? sale.sale : 0, saleCount: sale ? sale.count : 0,
+      rev: svc + pt, visits, cust, newC,
+      avgTicket: visits ? svc / visits : 0,
       prevRev: p ? p.rev : null,
-      prevDays: prev ? prev.activeDays : 0,
-      newRate: d.cust.size ? d.newC.size / d.cust.size : 0,
-      share: m.service ? d.rev / m.service : 0
+      prevVisits: p ? p.visits.size : 0,
+      newRate: cust ? newC / cust : 0,
+      prepaidOnly: !d
     };
-  }).sort((a, b) => b.rev - a.rev);
+  });
+  const T = rows.reduce((a, r) => {
+    a.svc += r.svc; a.pt += r.pt; a.pre += r.pre; a.real += r.real; a.sale += r.sale; a.saleCount += r.saleCount;
+    a.visits += r.visits; a.cust += r.cust; a.newC += r.newC; return a;
+  }, { svc: 0, pt: 0, pre: 0, real: 0, sale: 0, saleCount: 0, visits: 0, cust: 0, newC: 0 });
+  rows.forEach(r => { r.share = (T.svc + T.pt) ? r.rev / (T.svc + T.pt) : 0; });
+  rows.sort((a, b) => b.rev - a.rev || b.sale - a.sale);
 
   let h = '<div class="grid g-kpi">';
-  h += kpiCard({ label: "담당자 수", value: rows.length + "명", sub: "이번 달 시술 기록 기준" });
-  h += kpiCard({ label: "1인당 시술 매출", value: bigWon(m.service / Math.max(1, rows.length)), sub: "시술 매출 ÷ 담당자" });
-  h += kpiCard({
-    label: "최고 담당자 비중", value: pct(m.topDesigner ? m.topDesigner.rev / (m.service || 1) : 0),
-    tone: m.topDesigner && m.topDesigner.rev / (m.service || 1) >= 0.45 ? "bad" : "",
-    sub: m.topDesigner ? esc(m.topDesigner.name) : "—"
-  });
+  h += kpiCard({ label: "시술 매출", value: bigWon(T.svc), sub: "결제액(발생) · 정액권 결제분 포함" });
+  h += kpiCard({ label: "실매출", value: bigWon(T.real), sub: "실제 수납 · 시술+점판" });
+  h += kpiCard({ label: "정액권 사용", value: bigWon(T.pre), sub: "시술·점판 중 정액권 결제" });
+  h += kpiCard({ label: "정액권 판매", value: bigWon(T.sale), sub: "충전 " + nfmt(T.saleCount) + "건 · 선수금" });
   h += "</div>";
 
   const curDays = m.activeDays || 1;
   const partialNow = isPartialMonth(mk);
-  h += '<div class="section">' + sectionHead("담당자별 성과", "고객 수는 그 담당자를 찾은 고객(중복 없음) · 매장 고유 고객과 다릅니다");
+  h += '<div class="section">' + sectionHead("담당자별 매출·실적", "시술·점판은 결제액(발생), 실매출은 실제 수납 · 고객 수는 그 담당자를 찾은 고객(중복 없음)");
   h += '<div class="table-wrap"><table class="data"><thead><tr>' +
-    "<th>담당자</th><th>시술 매출</th><th>매출 비중</th><th>방문</th><th>고객 수</th><th>객단가</th><th>신규 고객</th><th>신규 비중</th><th>전월비</th><th>상태</th>" +
+    "<th>담당자</th><th>시술 매출</th><th>점판 매출</th><th>정액권 사용</th><th>실매출</th><th>정액권 판매</th><th>매출 비중</th><th>방문</th><th>고객 수</th><th>객단가</th><th>신규 비중</th><th>전월비</th><th>상태</th>" +
     "</tr></thead><tbody>" +
     rows.map(r => {
-      const ch = r.prevRev ? (partialNow ? (r.rev / curDays) / (r.prevRev / Math.max(1, r.prevDays)) - 1 : r.rev / r.prevRev - 1) : null;
-      const status = ch === null ? '<span class="tagcell tag-etc">신규/비교없음</span>' :
+      const ch = r.prevRev ? (partialNow ? (r.rev / curDays) / (r.prevRev / Math.max(1, prev ? prev.activeDays : 0)) - 1 : r.rev / r.prevRev - 1) : null;
+      const status = r.prepaidOnly ? '<span class="tagcell tag-etc">정액권 판매</span>' :
+        ch === null ? '<span class="tagcell tag-etc">비교없음</span>' :
         ch <= -0.3 ? '<span class="tagcell" style="background:var(--red-soft);color:var(--red)">급감</span>' :
         ch >= 0.15 ? '<span class="tagcell" style="background:var(--green-soft);color:var(--green)">성장</span>' :
         '<span class="tagcell tag-re">유지</span>';
       return "<tr><td>" + esc(r.n) + "</td>" +
-        '<td class="num"><b>' + won(r.rev) + "</b></td>" +
+        '<td class="num"><b>' + won(r.svc) + "</b></td>" +
+        '<td class="num">' + (r.pt ? won(r.pt) : "—") + "</td>" +
+        '<td class="num">' + (r.pre ? won(r.pre) : "—") + "</td>" +
+        '<td class="num"><b>' + won(r.real) + "</b></td>" +
+        '<td class="num">' + (r.sale ? won(r.sale) : "—") + "</td>" +
         '<td class="num">' + pct(r.share) + "</td>" +
         '<td class="num">' + nfmt(r.visits) + "</td>" +
         '<td class="num">' + nfmt(r.cust) + "</td>" +
-        '<td class="num">' + won(Math.round(r.avgTicket)) + "</td>" +
-        '<td class="num">' + nfmt(r.newC) + "</td>" +
+        '<td class="num">' + (r.visits ? won(Math.round(r.avgTicket)) : "—") + "</td>" +
         '<td class="num">' + pct(r.newRate) + "</td>" +
-        "<td>" + (r.prevRev === null ? '<span class="delta none">—</span>' : deltaChip(r.rev / curDays, r.prevRev / Math.max(1, r.prevDays))) + "</td>" +
+        "<td>" + (r.prevRev === null || r.prepaidOnly ? '<span class="delta none">—</span>' : deltaChip(r.rev / curDays, r.prevRev / Math.max(1, prev ? prev.activeDays : 1))) + "</td>" +
         "<td>" + status + "</td></tr>";
     }).join("") +
-    '<tr class="total"><td>합계</td><td class="num">' + won(m.service) + '</td><td class="num">100%</td><td class="num">' + nfmt(m.visits) + '</td><td class="num">' + nfmt(m.dzSumCust) + '명*</td><td class="num">' + won(Math.round(m.avgTicket)) + '</td><td class="num">' + nfmt(m.newCust) + '</td><td class="num">—</td><td>—</td><td></td></tr>' +
+    '<tr class="total"><td>합계</td><td class="num">' + won(T.svc) + '</td><td class="num">' + won(T.pt) + '</td><td class="num">' + won(T.pre) + '</td><td class="num">' + won(T.real) + '</td><td class="num">' + won(T.sale) + '</td><td class="num">100%</td><td class="num">' + nfmt(m.visits) + '</td><td class="num">' + nfmt(m.dzSumCust) + '명*</td><td class="num">' + won(m.visits ? Math.round(T.svc / m.visits) : 0) + '</td><td class="num">' + pct(m.newRateByCust) + '</td><td>—</td><td></td></tr>' +
     "</tbody></table></div>" +
+    '<div class="pl-note">실매출 = 시술 매출 + 점판 매출 − 정액권 사용. 위 표의 실매출 합계 <b>' + won(T.real) + "</b>에 정액권 판매 <b>" + won(T.sale) + "</b>를 더한 <b>" + won(T.real + T.sale) + "</b>이 이 달 대시보드의 실매출과 같은 금액입니다.</div>" +
     (partialNow ? '<div class="pl-note" style="margin-bottom:0">이번 달은 ' + new Date().getDate() + "일까지라 전월비는 <b>일평균 기준</b>으로 비교했습니다.</div>" : "") +
     '<div class="pl-note">* 합계 고객 수는 담당자별 고객을 그대로 더한 값입니다. 같은 고객이 두 담당자를 찾으면 두 번 잡히므로, 실제 매장 고유 고객은 <b>' + nfmt(m.uniqueCust) + "명</b>이고 중복은 <b>" + nfmt(m.dupCust) + "명</b>입니다.</div>" +
     "</div>";
 
-  h += '<div class="section">' + sectionHead("매출 구성", "담당자별 시술 매출");
-  h += '<div class="card card-pad">' + barList(rows.map(r => ({ label: r.n, v: r.rev })), "", v => wonShort(v)) + "</div></div>";
+  h += '<div class="section">' + sectionHead("매출 구성", "담당자별 시술 매출 + 점판");
+  h += '<div class="card card-pad">' + barList(rows.filter(r => r.rev > 0).map(r => ({ label: r.n, v: r.rev })), "", v => wonShort(v)) + "</div></div>";
   return h;
 }
 
