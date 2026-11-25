@@ -2069,7 +2069,7 @@ function viewDesigner() {
   const dupCust = Math.max(0, T.cust - storeCust);
   const spanLabel = whole ? (S.stats.from + " ~ " + S.stats.to) : monthLabel(mk);
 
-  let h = '<div class="grid g-kpi">';
+  let h = '<div class="grid g-4">';
   h += kpiCard({ label: "시술 매출", value: bigWon(T.svc), sub: "결제액(발생) · 정액권 결제분 포함" });
   h += kpiCard({ label: "실매출", value: bigWon(T.real), sub: "실제 수납 · 시술+점판 (정액권 판매 별도)" });
   h += kpiCard({ label: "정액권 사용", value: bigWon(T.pre), sub: "시술·점판 중 정액권 결제" });
