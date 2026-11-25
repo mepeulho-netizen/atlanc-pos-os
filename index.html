@@ -482,7 +482,7 @@ hr.soft{border:0;border-top:1px solid var(--line);margin:26px 0}
 /* ============================================================
    1. 기본 상수 · 유틸
    ============================================================ */
-const APP_VERSION = "1.2.1";
+const APP_VERSION = "1.2.4";
 const STORAGE_KEY = "atlanc_pos_v1";
 const SAMPLE_SEED = 20261125;
 
@@ -945,6 +945,7 @@ function ensureDzPre(M, name) {
 function aggregate(rows) {
   const byBranch = {};
   const customerIndex = {};      // bid -> Map(key -> {name,g,first,months:Set})
+  const branchRange = {};        // bid -> {from,to} 그 지점 자료의 실제 날짜 범위
   const monthSet = new Set();
   let minD = null, maxD = null;
 
@@ -958,6 +959,9 @@ function aggregate(rows) {
     monthSet.add(mk);
     if (!minD || r.d < minD) minD = r.d;
     if (!maxD || r.d > maxD) maxD = r.d;
+    const brR = branchRange[bid] || (branchRange[bid] = { from: r.d, to: r.d });
+    if (r.d < brR.from) brR.from = r.d;
+    if (r.d > brR.to) brR.to = r.d;
 
     const M = byBranch[bid][mk] || (byBranch[bid][mk] = emptyMonth());
     const vid = r.d + "|" + (r.t || "") + "|" + r.n + "|" + r.g;
@@ -1019,7 +1023,7 @@ function aggregate(rows) {
   }
 
   const months = Array.from(monthSet).sort();
-  return { byBranch, customerIndex, months, from: minD, to: maxD, rowCount: rows.length };
+  return { byBranch, customerIndex, branchRange, months, from: minD, to: maxD, rowCount: rows.length };
 }
 
 /* 월 지표(단일 지점) */
@@ -2032,8 +2036,12 @@ function viewDesigner() {
      기간은 '이번 달'과 '자료 전체 기간'을 고를 수 있다. 업로드한 파일이 여러 달에 걸치면
      (예: 압구정 2026-10-16~11-25) 핸드SOS 담당자별매출 원본과 같은 기간으로 바로 맞춰 볼 수 있다. */
   const whole = window.__dzPeriod === "all" && !!S.stats;
-  const spanFrom = whole ? (S.stats.from || mk).slice(0, 7) : mk;
-  const spanTo = whole ? (S.stats.to || mk).slice(0, 7) : mk;
+  /* 전체 기간은 그 지점 자료의 실제 날짜 범위를 쓴다 (지점마다 오픈일·자료 기간이 다름) */
+  const brRange = whole && S.stats.branchRange ? S.stats.branchRange[bid] : null;
+  const allFrom = (brRange && brRange.from) || (S.stats && S.stats.from) || mk;
+  const allTo = (brRange && brRange.to) || (S.stats && S.stats.to) || mk;
+  const spanFrom = whole ? allFrom.slice(0, 7) : mk;
+  const spanTo = whole ? allTo.slice(0, 7) : mk;
   const dza = designerAgg(bid, spanFrom, spanTo);
   const prev = whole ? null : metricsOf(bid, addMonths(mk, -1));
   const names = Array.from(new Set(Object.keys(dza.dz).concat(Object.keys(dza.dzPre))));
@@ -2069,7 +2077,7 @@ function viewDesigner() {
     storeCust = uniq;
   }
   const dupCust = Math.max(0, T.cust - storeCust);
-  const spanLabel = whole ? (S.stats.from + " ~ " + S.stats.to) : monthLabel(mk);
+  const spanLabel = whole ? (allFrom + " ~ " + allTo) : monthLabel(mk);
 
   let h = '<div class="grid g-4">';
   h += kpiCard({ label: "시술 매출", value: bigWon(T.svc), sub: "결제액(발생) · 정액권 결제분 포함" });
@@ -2080,8 +2088,7 @@ function viewDesigner() {
 
   h += '<div class="row" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:18px 0 2px">' +
     '<button class="btn ' + (whole ? "ghost" : "primary") + '" style="padding:10px 18px;font-size:.98rem" data-dz-period="month">' + monthLabel(mk) + '</button>' +
-    '<button class="btn ' + (whole ? "primary" : "ghost") + '" style="padding:10px 18px;font-size:.98rem" data-dz-period="all">자료 전체 기간' +
-    (S.stats && S.stats.from ? " (" + S.stats.from + " ~ " + S.stats.to + ")" : "") + '</button>' +
+    '<button class="btn ' + (whole ? "primary" : "ghost") + '" style="padding:10px 18px;font-size:.98rem" data-dz-period="all">자료 전체 기간 (' + allFrom + " ~ " + allTo + ')</button>' +
     '<span class="muted" style="font-size:.92rem">· ' + (whole ? "업로드한 기간 전체 합계" : "이번 달 합계") + '</span></div>';
 
   const curDays = m.activeDays || 1;
