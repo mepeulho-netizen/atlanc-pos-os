@@ -6,7 +6,7 @@
 <title>ATLANC POS 경영 OS</title>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b1424'/%3E%3Ctext x='32' y='45' font-family='Arial' font-size='38' font-weight='bold' fill='%23ffffff' text-anchor='middle'%3EA%3C/text%3E%3C/svg%3E">
 <meta name="theme-color" content="#0b1424">
-<meta name="description" content="아뜰랑 ATLANC 4개 지점 POS 경영 대시보드 — 매출·고객·디자이너·정액권·손익·자동진단">
+<meta name="description" content="아뜰랑 ATLANC 5개 지점 POS 경영 대시보드 — 매출·고객·디자이너·정액권·손익·자동진단">
 <link rel="preconnect" href="https://cdn.jsdelivr.net">
 <style>
 /* ============================================================
@@ -490,7 +490,9 @@ const BRANCHES = [
   { id: "geondae", name: "건대역점", short: "건대", open: "2021-05-01", color: "#2563eb" },
   { id: "sinsa", name: "신사역점", short: "신사", open: "2022-03-01", color: "#0a8f5b" },
   { id: "wangsimni", name: "왕십리점", short: "왕십리", open: "2026-03-01", color: "#b45309" },
-  { id: "yangjae", name: "양재역점", short: "양재", open: "2023-09-01", color: "#6b46c1" }
+  { id: "yangjae", name: "양재역점", short: "양재", open: "2023-09-01", color: "#6b46c1" },
+  { id: "apgujeong", name: "아뜰랑더블랙 압구정", short: "압구정", open: "2026-10-16", color: "#be123c",
+    aliases: ["압구정", "더블랙", "아뜰랑더블랙", "아뜰랑더블랙압구정", "apgujeong", "apgu"] }
 ];
 const BRANCH_MAP = Object.fromEntries(BRANCHES.map(b => [b.id, b]));
 
@@ -717,6 +719,14 @@ const SAMPLE_PROFILES = {
       { n: "권혁준 원장", w: 0.32 }, { n: "신동해 실장", w: 0.24 }, { n: "유가온 디자이너", w: 0.18 },
       { n: "백승호 디자이너", w: 0.14 }, { n: "임서아 디자이너", w: 0.12 }
     ]
+  },
+  // 아뜰랑더블랙 압구정 (2026-10-16 오픈 · 프리미엄 매장 · 연습용 가상 수치)
+  apgujeong: {
+    annual: 540000000, avg: 82000, newRate: 0.3, memberRate: 0.22, prepaidShare: 0.075, useShare: 0.065, priceMul: 1.35,
+    designers: [
+      { n: "차유겸 원장", w: 0.3 }, { n: "강현도 실장", w: 0.24 }, { n: "정우석 디자이너", w: 0.2 },
+      { n: "노하람 디자이너", w: 0.16 }, { n: "배로운 디자이너", w: 0.1 }
+    ]
   }
 };
 const SEASON = [1.02, 1.0, 1.05, 1.02, 1.03, 0.96, 0.9, 0.93, 1.0, 1.04, 1.06, 1.08]; // 1~12월
@@ -732,6 +742,7 @@ function generateSampleData() {
 
   for (const br of BRANCHES) {
     const prof = SAMPLE_PROFILES[br.id];
+    const priceMul = prof.priceMul || 1; // 프리미엄 지점은 메뉴 단가를 높게 (압구정 더블랙)
     const openKey = br.open.slice(0, 7);
     const pool = [];
     const usedKeys = new Set();
@@ -809,8 +820,9 @@ function generateSampleData() {
             const menuPool = MENUS.filter(m => m.g === "both" || m.g === gender);
             let m = pickWeighted(rnd, menuPool);
             if (chosen.some(c => c.name === m.name)) m = MENUS[0];
-            const disc = rnd() < 0.12 ? Math.round(m.price * 0.1 / 100) * 100 : 0;
-            chosen.push({ name: m.name, detail: m.detail, price: m.price, disc });
+            const menuPrice = Math.round(m.price * priceMul / 1000) * 1000;
+            const disc = rnd() < 0.12 ? Math.round(menuPrice * 0.1 / 100) * 100 : 0;
+            chosen.push({ name: m.name, detail: m.detail, price: menuPrice, disc });
           }
           const totalPay = chosen.reduce((a, c) => a + c.price - c.disc, 0);
           const usePrepaid = cust.member && rnd() < (useShare / Math.max(0.05, prof.memberRate));
@@ -1474,14 +1486,20 @@ function normalizeDate(v) {
   if (!isNaN(d)) return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
   return null;
 }
+/* 파일명·지점 열에서 지점 자동 인식 (압구정은 '더블랙', '아뜰랑더블랙', 'apgujeong'도 인식) */
 function findBranchFromName(name) {
-  const n = String(name);
+  const n = String(name === null || name === undefined ? "" : name).toLowerCase().replace(/[\s_\-()（）[\]]/g, "");
+  if (!n) return null;
+  let best = null, bestLen = 0;
   for (const b of BRANCHES) {
-    if (n.includes(b.short)) return b.id;
-    if (b.id === "geondae" && n.includes("건대")) return b.id;
-    if (b.id === "wangsimni" && n.includes("왕십리")) return b.id;
+    const keys = (b.aliases || []).concat([b.short, b.name, b.id]);
+    for (const k of keys) {
+      const kk = String(k || "").toLowerCase().replace(/[\s_\-()（）[\]]/g, "");
+      if (!kk || kk.length < 2) continue;
+      if (n.includes(kk) && kk.length > bestLen) { best = b.id; bestLen = kk.length; }
+    }
   }
-  return null;
+  return best;
 }
 
 /* 파일 하나 파싱 → 정규화 행 */
@@ -2463,7 +2481,7 @@ function buildStats() {
 function renderLogin() {
   const grid = document.getElementById("branchGrid");
   const cards = [{
-    id: "hq", role: "본사 · 전체 통합", name: "본사 전체", meta: "4개 지점 통합 · 비교 · 배분", hq: true
+    id: "hq", role: "본사 · 전체 통합", name: "본사 전체", meta: BRANCHES.length + "개 지점 통합 · 비교 · 배분", hq: true
   }].concat(BRANCHES.map(b => ({
     id: b.id, role: "지점", name: b.name,
     meta: "오픈 " + openDateOf(b.id).slice(0, 7) + " · " + (S.settings.pins && S.settings.pins[b.id] ? "PIN 잠금" : "잠금 없음"),
