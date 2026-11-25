@@ -1,0 +1,2933 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ATLANC POS 경영 OS</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='14' fill='%230b1424'/%3E%3Ctext x='32' y='45' font-family='Arial' font-size='38' font-weight='bold' fill='%23ffffff' text-anchor='middle'%3EA%3C/text%3E%3C/svg%3E">
+<meta name="theme-color" content="#0b1424">
+<meta name="description" content="아뜰랑 ATLANC 4개 지점 POS 경영 대시보드 — 매출·고객·디자이너·정액권·손익·자동진단">
+<link rel="preconnect" href="https://cdn.jsdelivr.net">
+<style>
+/* ============================================================
+   ATLANC POS 경영 OS — design system
+   큰 글씨 · 시원한 여백 · 넓은 표 (와이드 모니터 우선)
+   ============================================================ */
+:root{
+  --navy:#0b1424;
+  --navy-2:#111d33;
+  --navy-line:#22304a;
+  --paper:#f4f6fa;
+  --card:#ffffff;
+  --line:#e3e8f0;
+  --line-2:#eef2f7;
+  --ink:#0d1726;
+  --ink-2:#243349;
+  --muted:#5a6a80;
+  --muted-2:#8494a8;
+  --blue:#2563eb;
+  --blue-soft:#eaf0ff;
+  --green:#0a8f5b;
+  --green-soft:#e6f6ee;
+  --red:#d92d20;
+  --red-soft:#fdeceb;
+  --amber:#b45309;
+  --amber-soft:#fdf3e3;
+  --gold:#c9a227;
+  --radius:18px;
+  --shadow:0 1px 2px rgba(13,23,38,.04), 0 10px 28px -18px rgba(13,23,38,.28);
+  --font:"Pretendard Variable",Pretendard,"Apple SD Gothic Neo","Malgun Gothic","Noto Sans KR",system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html{font-size:17px;-webkit-text-size-adjust:100%}
+body{
+  margin:0;background:var(--paper);color:var(--ink);font-family:var(--font);
+  font-size:1rem;line-height:1.5;letter-spacing:-.011em;
+  -webkit-font-smoothing:antialiased;
+}
+button,input,select,textarea{font-family:inherit;font-size:inherit;color:inherit}
+button{cursor:pointer}
+a{color:var(--blue)}
+.num{font-variant-numeric:tabular-nums;font-feature-settings:"tnum" 1}
+.hidden{display:none !important}
+.muted{color:var(--muted)}
+.tiny{font-size:.88rem}
+
+/* ---------- 로그인 ---------- */
+#login{
+  min-height:100vh;display:flex;flex-direction:column;justify-content:center;
+  background:radial-gradient(1100px 600px at 12% -8%,#1b2c4d 0%,transparent 60%),
+             radial-gradient(900px 500px at 95% 105%,#16263f 0%,transparent 55%),var(--navy);
+  color:#fff;padding:56px 48px;
+}
+.login-inner{width:100%;max-width:1440px;margin:0 auto}
+.brand-line{display:flex;align-items:center;gap:16px;margin-bottom:44px}
+.brand-mark{
+  width:58px;height:58px;border:2px solid rgba(255,255,255,.85);border-radius:14px;
+  display:grid;place-items:center;font-weight:800;font-size:26px;letter-spacing:-.05em;
+}
+.brand-name{font-size:1.35rem;font-weight:800;letter-spacing:.22em}
+.brand-sub{font-size:.95rem;color:#9fb0c9;letter-spacing:.02em;margin-top:2px}
+#login h1{font-size:3.4rem;line-height:1.1;font-weight:800;letter-spacing:-.035em;margin:0 0 14px}
+#login .lede{font-size:1.25rem;color:#b7c5da;margin:0 0 44px;max-width:820px;line-height:1.55}
+.branch-grid{display:grid;grid-template-columns:1.15fr repeat(4,1fr);gap:18px}
+.branch-card{
+  text-align:left;background:rgba(255,255,255,.055);border:1px solid rgba(255,255,255,.16);
+  border-radius:20px;padding:26px 24px 24px;color:#fff;transition:.16s ease;
+}
+.branch-card:hover{background:rgba(255,255,255,.12);border-color:rgba(255,255,255,.42);transform:translateY(-2px)}
+.branch-card .role{font-size:.92rem;letter-spacing:.12em;color:#96a9c4;font-weight:700}
+.branch-card .name{font-size:1.75rem;font-weight:800;margin:10px 0 6px;letter-spacing:-.02em}
+.branch-card .meta{font-size:.95rem;color:#9fb0c9;line-height:1.45}
+.branch-card.hq{background:linear-gradient(160deg,rgba(37,99,235,.42),rgba(37,99,235,.14));border-color:rgba(122,162,255,.55)}
+.branch-card.locked .meta::before{content:"🔒 "}
+.login-foot{margin-top:40px;display:flex;gap:28px;flex-wrap:wrap;align-items:center;color:#8fa1bb;font-size:.95rem}
+.login-foot button{
+  background:none;border:1px solid rgba(255,255,255,.24);color:#dbe5f3;border-radius:12px;
+  padding:12px 20px;font-size:1rem;font-weight:600;
+}
+.login-foot button:hover{border-color:#fff;color:#fff}
+
+/* PIN 모달 */
+.modal{position:fixed;inset:0;background:rgba(6,11,20,.62);display:flex;align-items:center;justify-content:center;z-index:80;padding:24px}
+.modal-card{background:#fff;border-radius:22px;padding:36px;width:420px;max-width:100%;box-shadow:0 30px 80px -20px rgba(0,0,0,.5)}
+.modal-card h3{margin:0 0 8px;font-size:1.5rem}
+.modal-card p{margin:0 0 22px;color:var(--muted)}
+.modal-card input{
+  width:100%;padding:16px 18px;border:2px solid var(--line);border-radius:14px;
+  font-size:1.6rem;letter-spacing:.3em;text-align:center;font-weight:700;
+}
+.modal-card .row{display:flex;gap:12px;margin-top:22px}
+.btn{border:0;border-radius:13px;padding:14px 22px;font-size:1rem;font-weight:700;background:#eef2f8;color:var(--ink-2)}
+.btn:hover{filter:brightness(.97)}
+.btn.primary{background:var(--blue);color:#fff}
+.btn.ghost{background:transparent;border:1.5px solid var(--line)}
+.btn.danger{background:var(--red-soft);color:var(--red)}
+.btn.wide{flex:1}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+
+/* ---------- 앱 셸 ---------- */
+#app{display:flex;min-height:100vh}
+#sidebar{
+  width:272px;flex:0 0 272px;background:var(--navy);color:#fff;position:sticky;top:0;height:100vh;
+  display:flex;flex-direction:column;padding:26px 18px 20px;z-index:20;
+}
+.side-brand{display:flex;align-items:center;gap:12px;padding:2px 10px 22px;border-bottom:1px solid var(--navy-line);margin-bottom:18px}
+.side-brand .mark{width:40px;height:40px;border-radius:11px;border:2px solid rgba(255,255,255,.85);display:grid;place-items:center;font-weight:800;font-size:17px}
+.side-brand .t1{font-weight:800;letter-spacing:.18em;font-size:.95rem}
+.side-brand .t2{font-size:.78rem;color:#8fa2bd;letter-spacing:.04em}
+.side-branch{
+  background:var(--navy-2);border:1px solid var(--navy-line);border-radius:14px;padding:14px 16px;margin:0 4px 20px;
+}
+.side-branch .lbl{font-size:.78rem;color:#8fa2bd;letter-spacing:.1em;font-weight:700}
+.side-branch .val{font-size:1.25rem;font-weight:800;margin-top:4px;letter-spacing:-.02em}
+.side-branch select{
+  margin-top:10px;width:100%;background:#0a1120;color:#e8eef8;border:1px solid var(--navy-line);
+  border-radius:10px;padding:10px 12px;font-size:.95rem;font-weight:600;
+}
+nav.nav{display:flex;flex-direction:column;gap:4px}
+.nav-item{
+  display:flex;align-items:center;gap:12px;background:none;border:0;color:#c3d0e2;
+  padding:14px 16px;border-radius:12px;font-size:1.02rem;font-weight:600;text-align:left;width:100%;
+}
+.nav-item .ico{width:22px;text-align:center;font-size:1.05rem;opacity:.9}
+.nav-item:hover{background:rgba(255,255,255,.07);color:#fff}
+.nav-item.active{background:#fff;color:var(--navy);font-weight:800}
+.side-foot{margin-top:auto;padding:16px 8px 0;border-top:1px solid var(--navy-line);font-size:.82rem;color:#7d90ab;line-height:1.6}
+.side-user{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:12px}
+.side-user .who{font-size:.95rem;color:#dbe5f3;font-weight:700}
+.side-user button{background:rgba(255,255,255,.1);border:0;color:#c9d6e8;border-radius:9px;padding:8px 12px;font-size:.85rem}
+
+#main{flex:1;min-width:0;padding:26px 40px 80px;max-width:1920px}
+#topbar{display:flex;align-items:flex-end;justify-content:space-between;gap:24px;flex-wrap:wrap;margin-bottom:26px}
+#topbar .crumb{font-size:.86rem;letter-spacing:.14em;color:var(--muted);font-weight:800}
+#topbar h1{margin:6px 0 0;font-size:2.15rem;font-weight:800;letter-spacing:-.035em;line-height:1.15}
+#topbar .sub{margin-top:8px;color:var(--muted);font-size:1rem}
+.top-tools{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.month-nav{display:flex;align-items:center;gap:6px;background:#fff;border:1px solid var(--line);border-radius:14px;padding:6px 8px;box-shadow:var(--shadow)}
+.month-nav button{background:none;border:0;font-size:1.1rem;width:36px;height:36px;border-radius:9px;color:var(--ink-2)}
+.month-nav button:hover{background:var(--line-2)}
+.month-nav .m{font-size:1.05rem;font-weight:800;padding:0 8px;min-width:118px;text-align:center}
+.pill{display:inline-flex;align-items:center;gap:8px;border-radius:999px;padding:9px 15px;font-weight:700;font-size:.9rem}
+.pill.sample{background:var(--amber-soft);color:#8a4b06}
+.pill.live{background:var(--green-soft);color:var(--green)}
+.pill.off{background:#eef2f8;color:var(--muted)}
+
+/* ---------- 공용 ---------- */
+.banner{
+  display:flex;gap:16px;align-items:flex-start;background:#fff;border:1px solid var(--line);
+  border-left:6px solid var(--blue);border-radius:14px;padding:18px 22px;margin-bottom:24px;box-shadow:var(--shadow)
+}
+.banner .bt{font-weight:800;font-size:1rem}
+.banner .bd{color:var(--muted);font-size:.95rem;margin-top:3px;line-height:1.55}
+.banner.warn{border-left-color:var(--amber);background:#fffdf7}
+.banner.warn .bt{color:#8a4b06}
+.banner.good{border-left-color:var(--green);background:#f8fdfa}
+.banner.good .bt{color:var(--green)}
+.section{margin:34px 0 0}
+.section-head{display:flex;align-items:baseline;justify-content:space-between;gap:16px;margin:0 0 16px;flex-wrap:wrap}
+.section-head h2{margin:0;font-size:1.5rem;font-weight:800;letter-spacing:-.025em}
+.section-head .hint{color:var(--muted);font-size:.95rem}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.card-pad{padding:26px 28px}
+.grid{display:grid;gap:20px}
+.g-kpi{grid-template-columns:repeat(3,1fr)}
+.g-2{grid-template-columns:1.45fr 1fr}
+.g-2e{grid-template-columns:1fr 1fr}
+.g-3{grid-template-columns:repeat(3,1fr)}
+.g-4{grid-template-columns:repeat(4,1fr)}
+
+/* KPI 카드 */
+.kpi{padding:24px 26px 22px;position:relative;overflow:hidden}
+.kpi .label{font-size:1rem;font-weight:700;color:var(--muted);display:flex;align-items:center;gap:8px}
+.kpi .value{font-size:2.65rem;font-weight:800;letter-spacing:-.045em;margin:10px 0 6px;line-height:1.05;white-space:nowrap}
+.kpi .value small{font-size:1.1rem;font-weight:700;letter-spacing:-.01em;color:var(--muted);margin-left:4px}
+.kpi .under{display:flex;align-items:center;gap:10px;flex-wrap:wrap;font-size:.95rem;color:var(--muted)}
+.kpi.accent .value{color:var(--blue)}
+.kpi.good .value{color:var(--green)}
+.kpi.bad .value{color:var(--red)}
+.delta{font-weight:800;font-size:.95rem;padding:3px 10px;border-radius:999px;white-space:nowrap}
+.delta.up{background:var(--green-soft);color:var(--green)}
+.delta.down{background:var(--red-soft);color:var(--red)}
+.delta.flat{background:#eef2f8;color:var(--muted)}
+.delta.none{background:#eef2f8;color:var(--muted-2)}
+
+/* 표 */
+.table-wrap{overflow:auto;border-radius:14px;border:1px solid var(--line);background:#fff}
+table.data{width:100%;border-collapse:collapse;white-space:nowrap}
+table.data th,table.data td{padding:15px 18px;text-align:right;border-bottom:1px solid var(--line-2);font-size:1rem}
+table.data th{
+  font-size:.9rem;color:var(--muted);font-weight:800;letter-spacing:.02em;background:#f8fafd;
+  position:sticky;top:0;z-index:2;border-bottom:1px solid var(--line)
+}
+table.data th:first-child,table.data td:first-child{text-align:left;position:sticky;left:0;background:#fff;z-index:1;font-weight:700}
+table.data th:first-child{background:#f8fafd;z-index:3}
+table.data tbody tr:hover td{background:#fbfdff}
+table.data tbody tr.total td{font-weight:800;background:#f7f9fd;border-top:2px solid var(--line)}
+table.data tbody tr:last-child td{border-bottom:0}
+table.data td.pos{color:var(--green);font-weight:700}
+table.data td.neg{color:var(--red);font-weight:700}
+table.data.tight th,table.data.tight td{padding:13px 13px;font-size:.95rem}
+table.data.tight th{font-size:.86rem}
+table.data.compact th,table.data.compact td{padding:12px 14px;font-size:.95rem}
+.tagcell{display:inline-block;padding:4px 10px;border-radius:8px;font-size:.85rem;font-weight:800}
+.tag-new{background:var(--blue-soft);color:var(--blue)}
+.tag-re{background:#eef2f8;color:var(--ink-2)}
+.tag-etc{background:#f5f0ff;color:#6b46c1}
+
+/* 막대/차트 */
+.chart{width:100%;display:block;overflow:visible}
+.legend{display:flex;gap:20px;flex-wrap:wrap;margin-top:14px;font-size:.92rem;color:var(--muted)}
+.legend i{display:inline-block;width:14px;height:14px;border-radius:4px;margin-right:7px;vertical-align:-2px}
+.bars{display:flex;flex-direction:column;gap:14px}
+.bar-row{display:grid;grid-template-columns:235px 1fr 140px;align-items:center;gap:18px}
+.bar-row .nm{font-weight:700;font-size:.98rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar-track{height:16px;background:#eef2f8;border-radius:999px;overflow:hidden}
+.bar-fill{height:100%;border-radius:999px;background:linear-gradient(90deg,#3b82f6,#2563eb)}
+.bar-row .vl{text-align:right;font-weight:800}
+
+/* 진단 카드 */
+.diag{border-radius:16px;padding:22px 24px;border:1px solid var(--line);background:#fff;border-left:6px solid var(--muted-2);display:flex;flex-direction:column;gap:8px}
+.diag.sev-3{border-left-color:var(--red);background:#fffbfb}
+.diag.sev-2{border-left-color:var(--amber);background:#fffdf8}
+.diag.sev-1{border-left-color:var(--blue);background:#fbfdff}
+.diag.sev-0{border-left-color:var(--green);background:#f9fdfb}
+.diag .top{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.diag .badge{font-size:.82rem;font-weight:800;padding:4px 11px;border-radius:8px;letter-spacing:.02em}
+.sev-3 .badge{background:var(--red-soft);color:var(--red)}
+.sev-2 .badge{background:var(--amber-soft);color:#8a4b06}
+.sev-1 .badge{background:var(--blue-soft);color:var(--blue)}
+.sev-0 .badge{background:var(--green-soft);color:var(--green)}
+.diag .ttl{font-size:1.14rem;font-weight:800;letter-spacing:-.02em}
+.diag .metric{font-size:1.6rem;font-weight:800;letter-spacing:-.03em}
+.diag .why{color:var(--ink-2);font-size:.98rem;line-height:1.6}
+.diag .act{background:rgba(13,23,38,.035);border-radius:11px;padding:13px 16px;font-size:.96rem;line-height:1.55}
+.diag .act b{color:var(--ink)}
+
+/* 체크리스트 */
+.chk-item{display:grid;grid-template-columns:34px 1fr auto;gap:14px;align-items:start;padding:16px 4px;border-bottom:1px solid var(--line-2)}
+.chk-item:last-child{border-bottom:0}
+.chk-item input[type=checkbox]{width:26px;height:26px;accent-color:var(--blue);margin-top:2px}
+.chk-item .t{font-weight:700;font-size:1.02rem}
+.chk-item .d{color:var(--muted);font-size:.92rem;margin-top:3px;line-height:1.5}
+.chk-item.done .t{text-decoration:line-through;color:var(--muted-2)}
+.chk-memo{width:100%;margin-top:8px;border:1px solid var(--line);border-radius:10px;padding:10px 12px;font-size:.95rem;resize:vertical;min-height:44px;background:#fcfdfe}
+.chk-pill{font-size:.82rem;font-weight:800;padding:5px 10px;border-radius:8px;background:#eef2f8;color:var(--muted);white-space:nowrap}
+
+/* 손익 */
+.pl-grid{display:grid;grid-template-columns:minmax(360px,420px) 1fr;gap:24px;align-items:start}
+.field{display:grid;grid-template-columns:1fr 150px;align-items:center;gap:14px;padding:11px 0;border-bottom:1px solid var(--line-2)}
+.field:last-child{border-bottom:0}
+.field label{font-size:.98rem;font-weight:600;color:var(--ink-2)}
+.field label span{display:block;font-size:.82rem;color:var(--muted);font-weight:500;margin-top:2px}
+.field input{width:100%;border:1.5px solid var(--line);border-radius:10px;padding:11px 12px;text-align:right;font-size:1rem;font-weight:700;background:#fff}
+.field input:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 4px rgba(37,99,235,.12)}
+.pl-line{display:flex;justify-content:space-between;align-items:baseline;gap:20px;padding:15px 0;border-bottom:1px solid var(--line-2)}
+.pl-line .k{font-size:1.02rem;color:var(--ink-2);font-weight:600}
+.pl-line .v{font-size:1.18rem;font-weight:800;white-space:nowrap}
+.pl-line.sum{border-bottom:2px solid var(--line);background:#fafcff;margin:0 -28px;padding:16px 28px}
+.pl-line.sum .k{font-weight:800;color:var(--ink)}
+.pl-line.sum .v{font-size:1.32rem}
+.pl-line.big .v{font-size:1.65rem}
+.pl-line.big{background:#f4f8ff;margin:0 -28px;padding:20px 28px;border-radius:0}
+.pl-line .n{font-size:.85rem;color:var(--muted);font-weight:600;margin-top:2px}
+.pl-note{font-size:.9rem;color:var(--muted);line-height:1.6;margin-top:18px;background:#f8fafd;border-radius:12px;padding:14px 16px}
+
+/* 데이터/설정 */
+.dropzone{border:2.5px dashed #c3d0e2;border-radius:18px;padding:44px 28px;text-align:center;background:#fbfcfe;transition:.15s}
+.dropzone.over{border-color:var(--blue);background:var(--blue-soft)}
+.dropzone .big{font-size:1.3rem;font-weight:800}
+.dropzone .sm{color:var(--muted);margin-top:8px;font-size:.98rem}
+.dropzone .btn{margin-top:20px}
+.file-row{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;padding:14px 2px;border-bottom:1px solid var(--line-2);font-size:.95rem}
+.switch{display:flex;align-items:center;gap:14px;padding:14px 0}
+.switch input{width:24px;height:24px;accent-color:var(--blue)}
+.inp{width:100%;border:1.5px solid var(--line);border-radius:11px;padding:12px 14px;font-size:1rem;background:#fff}
+.inp:focus{outline:none;border-color:var(--blue);box-shadow:0 0 0 4px rgba(37,99,235,.12)}
+.kv{display:grid;grid-template-columns:200px 1fr;gap:10px 18px;font-size:.98rem}
+.kv .k{color:var(--muted);font-weight:600}
+.kv .v{font-weight:700}
+hr.soft{border:0;border-top:1px solid var(--line);margin:26px 0}
+
+/* 토스트 */
+#toast{position:fixed;left:50%;bottom:34px;transform:translateX(-50%) translateY(20px);background:#0d1726;color:#fff;padding:16px 26px;border-radius:14px;font-weight:700;font-size:1rem;opacity:0;pointer-events:none;transition:.22s;z-index:120;box-shadow:0 20px 40px -12px rgba(0,0,0,.5);max-width:90vw}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+#toast.err{background:#7f1d1d}
+
+/* ---------- 반응형 ---------- */
+@media (max-width:1500px){
+  .g-kpi{grid-template-columns:repeat(3,1fr)}
+  #login h1{font-size:2.9rem}
+}
+@media (max-width:1200px){
+  .branch-grid{grid-template-columns:repeat(3,1fr)}
+  .g-2,.g-2e{grid-template-columns:1fr}
+  .g-4{grid-template-columns:repeat(2,1fr)}
+  .pl-grid{grid-template-columns:1fr}
+}
+@media (max-width:900px){
+  #sidebar{position:static;width:100%;flex:0 0 auto;height:auto;padding:16px}
+  #app{flex-direction:column}
+  #main{padding:18px 18px 60px}
+  .g-kpi{grid-template-columns:repeat(2,1fr)}
+  .g-3{grid-template-columns:1fr}
+  #login{padding:36px 22px}
+  #login h1{font-size:2.2rem}
+  .branch-grid{grid-template-columns:1fr 1fr}
+  nav.nav{flex-direction:row;flex-wrap:wrap;overflow:visible;gap:8px;padding-bottom:0}
+  .nav-item{white-space:nowrap;padding:11px 14px;width:auto}
+  .side-branch{display:block;margin:12px 4px;padding:10px 12px}
+  .side-branch .lbl{display:none}
+  .side-branch .val{font-size:1.05rem;margin-top:0}
+  .side-branch select{margin-top:8px;padding:9px 11px}
+  .side-foot{display:none}
+}
+@media (max-width:640px){
+  html{font-size:16px}
+  body{overflow-x:hidden}
+  #main{padding:14px 14px 60px}
+  #topbar h1{font-size:1.6rem}
+  .g-kpi{grid-template-columns:1fr}
+  .g-4{grid-template-columns:1fr 1fr}
+  .kpi{padding:18px;min-width:0}
+  .kpi .value{font-size:1.95rem}
+  .kpi .label{font-size:.95rem}
+  .kpi .under{font-size:.9rem}
+  .side-brand{padding:0 4px 10px;margin-bottom:10px}
+  .side-brand .mark{width:32px;height:32px;font-size:14px;border-radius:9px}
+  .side-brand .t1{font-size:.82rem}
+  .side-brand .t2{display:none}
+  .side-branch{margin:8px 0;padding:8px 10px}
+  .side-branch select{padding:8px 10px;font-size:.9rem}
+  .nav-item{padding:9px 11px;font-size:.93rem;gap:8px}
+  .nav-item .ico{width:18px;font-size:.95rem}
+  .banner{flex-direction:column;gap:12px}
+  .banner .btn{margin-left:0 !important;width:100%}
+  .mchart{min-width:0;height:250px}
+  .mcol{flex:0 0 34px;min-width:34px}
+  .mbar-wrap{flex:0 0 170px;height:170px}
+  nav.nav{scrollbar-width:none;-ms-overflow-style:none}
+  nav.nav::-webkit-scrollbar{display:none}
+  .card-pad{padding:18px}
+  .branch-grid{grid-template-columns:1fr}
+  #login h1{font-size:1.85rem}
+  #login .lede{font-size:1.05rem}
+  .bar-row{grid-template-columns:118px 1fr 84px;gap:10px}
+  .bar-row .nm,.bar-row .vl{font-size:.85rem}
+  .pl-line.sum,.pl-line.big{margin:0 -18px;padding:14px 18px}
+  .field{grid-template-columns:1fr 110px}
+  table.data th,table.data td{padding:12px 13px;font-size:.9rem}
+  .section-head h2{font-size:1.25rem}
+  .kv{grid-template-columns:1fr}
+}
+@media print{
+  #sidebar,.top-tools,#toast{display:none !important}
+  #main{padding:0}
+  body{background:#fff}
+  .card{box-shadow:none}
+}
+
+/* 월별 막대 차트 */
+.mchart{display:flex;align-items:flex-end;gap:9px;height:300px;padding-top:8px;overflow-x:auto;overflow-y:hidden}
+.mcol{flex:1 0 40px;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%;min-width:40px}
+.mv{font-size:.85rem;color:var(--muted);white-space:nowrap;margin-bottom:7px;font-weight:700}
+.mbar-wrap{flex:0 0 208px;height:208px;width:100%;display:flex;align-items:flex-end;justify-content:center}
+.mbar{width:72%;max-width:52px;background:#c7d7f5;border-radius:9px 9px 4px 4px;min-height:3px;transition:.15s}
+.mbar:hover{background:#93b4ef}
+.mbar.cur{background:linear-gradient(180deg,#3b82f6,#1d4ed8)}
+.mbar.empty{background:#eef2f8}
+.mlab{font-size:.86rem;color:var(--muted);margin-top:9px;font-weight:700}
+@media (max-width:640px){
+  .mchart{min-width:0;height:230px}
+  .mcol{flex:0 0 30px;min-width:30px}
+  .mbar-wrap{flex:0 0 150px;height:150px}
+  .mv{font-size:.75rem}
+  .mlab{font-size:.75rem}
+}
+@media print{
+  .mchart{height:230px}
+  .mbar-wrap{flex:0 0 150px;height:150px}
+}
+</style>
+</head>
+<body>
+<!-- ============================================================
+     로그인 / 지점 선택
+     ============================================================ -->
+<div id="login">
+  <div class="login-inner">
+    <div class="brand-line">
+      <div class="brand-mark">A</div>
+      <div>
+        <div class="brand-name">ATLANC</div>
+        <div class="brand-sub">POS BUSINESS OS · 아뜰랑랩</div>
+      </div>
+    </div>
+    <h1>지점 경영 대시보드</h1>
+    <p class="lede">핸드SOS POS 매출 자료를 그대로 올리면, 지점별 매출·고객·디자이너·정액권·손익과 개선 과제까지 한 화면에서 봅니다.</p>
+    <div class="branch-grid" id="branchGrid"></div>
+    <div class="login-foot">
+      <span id="loginMeta">데이터는 이 브라우저에만 저장됩니다 · 서버비 0원</span>
+      <button id="loginSampleBtn" type="button">샘플 데이터로 먼저 보기</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     앱 셸
+     ============================================================ -->
+<div id="app" class="hidden">
+  <aside id="sidebar">
+    <div class="side-brand">
+      <div class="mark">A</div>
+      <div>
+        <div class="t1">ATLANC</div>
+        <div class="t2">POS BUSINESS OS</div>
+      </div>
+    </div>
+    <div class="side-branch">
+      <div class="lbl">현재 보기</div>
+      <div class="val" id="sideBranchName">본사 전체</div>
+      <select id="branchSelect" aria-label="지점 전환"></select>
+    </div>
+    <nav class="nav" id="nav">
+      <button class="nav-item active" data-view="dash"><span class="ico">◧</span>대시보드</button>
+      <button class="nav-item" data-view="sales"><span class="ico">▤</span>매출 · 고객</button>
+      <button class="nav-item" data-view="designer"><span class="ico">✦</span>디자이너</button>
+      <button class="nav-item" data-view="prepaid"><span class="ico">◉</span>정액권</button>
+      <button class="nav-item" data-view="pl"><span class="ico">₩</span>손익 · 정산</button>
+      <button class="nav-item" data-view="diag"><span class="ico">⚑</span>진단 · 개선</button>
+      <button class="nav-item" data-view="data"><span class="ico">⇪</span>데이터 업로드</button>
+      <button class="nav-item" data-view="settings"><span class="ico">⚙</span>설정</button>
+    </nav>
+    <div class="side-foot">
+      <div class="side-user">
+        <div class="who" id="sideWho">본사 관리자</div>
+        <button id="logoutBtn" type="button">나가기</button>
+      </div>
+      <div id="sideStore">브라우저 저장 · 서버 없음</div>
+    </div>
+  </aside>
+
+  <main id="main">
+    <header id="topbar">
+      <div>
+        <div class="crumb" id="crumb">ATLANC / DASHBOARD</div>
+        <h1 id="pageTitle">경영 대시보드</h1>
+        <div class="sub" id="pageSub"></div>
+      </div>
+      <div class="top-tools">
+        <div class="month-nav">
+          <button id="prevMonth" type="button" aria-label="이전 달">‹</button>
+          <div class="m num" id="monthLabel">2026년 11월</div>
+          <button id="nextMonth" type="button" aria-label="다음 달">›</button>
+        </div>
+        <button class="btn ghost" id="printBtn" type="button" title="인쇄 / PDF 저장">인쇄</button>
+        <span class="pill sample" id="dataPill">샘플 데이터</span>
+      </div>
+    </header>
+    <section id="view"></section>
+  </main>
+</div>
+
+<div id="toast"></div>
+<div id="modalHost"></div>
+
+<script>
+/* ============================================================
+   ATLANC POS 경영 OS v1.0
+   단일 HTML · 서버 없음 · 브라우저 localStorage
+   ============================================================ */
+"use strict";
+/* ============================================================
+   1. 기본 상수 · 유틸
+   ============================================================ */
+const APP_VERSION = "1.0.0";
+const STORAGE_KEY = "atlanc_pos_v1";
+const SAMPLE_SEED = 20261125;
+
+const BRANCHES = [
+  { id: "geondae", name: "건대역점", short: "건대", open: "2021-05-01", color: "#2563eb" },
+  { id: "sinsa", name: "신사역점", short: "신사", open: "2022-03-01", color: "#0a8f5b" },
+  { id: "wangsimni", name: "왕십리점", short: "왕십리", open: "2026-03-01", color: "#b45309" },
+  { id: "yangjae", name: "양재역점", short: "양재", open: "2023-09-01", color: "#6b46c1" }
+];
+const BRANCH_MAP = Object.fromEntries(BRANCHES.map(b => [b.id, b]));
+
+const MENUS = [
+  { name: "커트", detail: "시그니처 커트", price: 26000, w: 44, g: "both" },
+  { name: "남성펌", detail: "볼륨 매직펌", price: 95000, w: 14, g: "남" },
+  { name: "컬러", detail: "새치 커버 컬러", price: 85000, w: 11, g: "both" },
+  { name: "드라이", detail: "스타일 드라이", price: 18000, w: 8, g: "both" },
+  { name: "클리닉", detail: "두피 클리닉", price: 60000, w: 5, g: "both" },
+  { name: "여성펌", detail: "여성 레이어드 펌", price: 145000, w: 4, g: "여" },
+  { name: "기장추가", detail: "길이 추가 요금", price: 30000, w: 6, g: "both" },
+  { name: "세트메뉴", detail: "커트+클리닉 세트", price: 75000, w: 4, g: "both" },
+  { name: "부분펌", detail: "앞머리·옆머리 부분펌", price: 55000, w: 4, g: "both" }
+];
+const PREPAID_PRODUCTS = [
+  { name: "20회원", price: 200000, sessions: 20, w: 0.55 },
+  { name: "30회원", price: 300000, sessions: 30, w: 0.3 },
+  { name: "50회원", price: 500000, sessions: 50, w: 0.15 }
+];
+const VISIT_LABEL = { "신규": "신규", "재방": "재방", "대체": "대체", "손님": "손님" };
+
+/* ---------- 숫자·날짜 포맷 ---------- */
+function nfmt(n) {
+  if (n === null || n === undefined || Number.isNaN(n)) return "—";
+  const v = Math.round(n);
+  return v.toLocaleString("ko-KR");
+}
+function won(n) { return n === null || n === undefined || Number.isNaN(n) ? "—" : nfmt(n) + "원"; }
+function wonShort(n) {
+  if (n === null || n === undefined || Number.isNaN(n)) return "—";
+  const a = Math.abs(n);
+  if (a >= 100000000) return (n / 100000000).toFixed(a >= 1000000000 ? 1 : 2).replace(/\.?0+$/, "") + "억";
+  if (a >= 10000) return Math.round(n / 10000).toLocaleString("ko-KR") + "만";
+  return nfmt(n) + "원";
+}
+function pct(x, d = 1) {
+  if (x === null || x === undefined || !isFinite(x)) return "—";
+  return (x * 100).toFixed(d).replace(/\.0$/, "") + "%";
+}
+function pctPoint(x, d = 1) {
+  if (x === null || x === undefined || !isFinite(x)) return "—";
+  return (x >= 0 ? "+" : "") + (x * 100).toFixed(d) + "p";
+}
+function daysInMonth(key) {
+  const [y, m] = key.split("-").map(Number);
+  return new Date(y, m, 0).getDate();
+}
+function monthKeyOf(d) { return String(d).slice(0, 7); }
+function monthLabel(key) {
+  const [y, m] = key.split("-").map(Number);
+  return y + "년 " + m + "월";
+}
+function monthShort(key) {
+  const [y, m] = key.split("-").map(Number);
+  return String(y).slice(2) + "." + String(m).padStart(2, "0");
+}
+function addMonths(key, delta) {
+  const [y, m] = key.split("-").map(Number);
+  const d = new Date(y, m - 1 + delta, 1);
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0");
+}
+function monthDiff(a, b) { // b - a (months)
+  const [ay, am] = a.split("-").map(Number), [by, bm] = b.split("-").map(Number);
+  return (by - ay) * 12 + (bm - am);
+}
+function todayMonthKey() {
+  const d = new Date();
+  return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0");
+}
+function monthRange(from, to) {
+  const out = [];
+  let cur = from;
+  let guard = 0;
+  while (cur <= to && guard++ < 120) { out.push(cur); cur = addMonths(cur, 1); }
+  return out;
+}
+function esc(s) {
+  return String(s === null || s === undefined ? "" : s)
+    .replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+}
+function uid() { return Math.random().toString(36).slice(2, 10); }
+function clamp(n, a, b) { return Math.max(a, Math.min(b, n)); }
+
+/* ---------- 상태 ---------- */
+const S = {
+  role: null,            // 'hq' | branchId
+  view: "dash",
+  month: todayMonthKey(),
+  data: { source: "sample", files: [], updatedAt: null },
+  stats: null,
+  pl: {},                // branchId -> 손익 입력
+  checklist: {},         // branchId -> { items: {id:{done,note}}, updatedAt }
+  settings: { apiUrl: "", pins: {}, assumptions: true, branches: {} },
+  loaded: false
+};
+
+function saveState() {
+  try {
+    const payload = {
+      version: APP_VERSION,
+      role: S.role,
+      view: S.view,
+      month: S.month,
+      data: {
+        source: S.data.source,
+        updatedAt: S.data.updatedAt,
+        files: S.data.source === "upload" ? S.data.files : []
+      },
+      pl: S.pl,
+      checklist: S.checklist,
+      settings: S.settings
+    };
+    const json = JSON.stringify(payload);
+    if (json.length > 4.6 * 1024 * 1024) {
+      toast("저장 용량이 큽니다. 오래된 업로드 파일을 지워 주세요.", true);
+      return;
+    }
+    localStorage.setItem(STORAGE_KEY, json);
+  } catch (e) {
+    toast("브라우저 저장 실패: " + e.message, true);
+  }
+}
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return false;
+    const p = JSON.parse(raw);
+    S.role = p.role || null;
+    S.view = p.view || "dash";
+    S.month = p.month || todayMonthKey();
+    S.pl = p.pl || {};
+    S.checklist = p.checklist || {};
+    S.settings = Object.assign({ apiUrl: "", pins: {}, assumptions: true, branches: {} }, p.settings || {});
+    S.data.source = p.data && p.data.source === "upload" ? "upload" : "sample";
+    S.data.files = (p.data && p.data.files) || [];
+    S.data.updatedAt = (p.data && p.data.updatedAt) || null;
+    return true;
+  } catch (e) {
+    console.warn("state load failed", e);
+    return false;
+  }
+}
+
+/* ---------- UI 유틸 ---------- */
+let toastTimer = null;
+function toast(msg, isErr) {
+  const el = document.getElementById("toast");
+  el.textContent = msg;
+  el.className = "show" + (isErr ? " err" : "");
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => { el.className = ""; el.textContent = ""; }, 3600);
+}
+function openModal(html, onMount) {
+  const host = document.getElementById("modalHost");
+  host.innerHTML = '<div class="modal"><div class="modal-card">' + html + "</div></div>";
+  if (onMount) onMount(host);
+  const firstInput = host.querySelector("input");
+ if (firstInput) setTimeout(() => firstInput.focus(), 40);
+}
+function closeModal() { document.getElementById("modalHost").innerHTML = ""; }
+function confirmModal(title, body, okLabel, onOk, danger) {
+  openModal(
+    '<h3>' + esc(title) + '</h3><p>' + body + '</p>' +
+    '<div class="row"><button class="btn ghost wide" data-x="cancel">취소</button>' +
+    '<button class="btn ' + (danger ? "danger" : "primary") + ' wide" data-x="ok">' + esc(okLabel) + '</button></div>',
+    host => {
+      host.querySelector('[data-x="cancel"]').onclick = closeModal;
+      host.querySelector('[data-x="ok"]').onclick = () => { closeModal(); onOk(); };
+    }
+  );
+}
+
+/* ---------- PRNG ---------- */
+function mulberry32(a) {
+  return function () {
+    a |= 0; a = a + 0x6D2B79F5 | 0;
+    let t = Math.imul(a ^ a >>> 15, 1 | a);
+    t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t;
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+function pickWeighted(rnd, list, key) {
+  let total = 0;
+  for (const it of list) total += key ? key(it) : it.w;
+  let r = rnd() * total;
+  for (const it of list) { r -= key ? key(it) : it.w; if (r <= 0) return it; }
+  return list[list.length - 1];
+}
+
+/* ---------- 고객 이름 풀 ---------- */
+const SURNAME = ["김", "이", "박", "최", "정", "강", "조", "윤", "장", "임", "한", "오", "서", "신", "권", "황", "안", "송", "류", "홍", "전", "고", "문", "손", "양", "배", "백", "허", "유", "남"];
+const GIVEN_M = ["민준", "서준", "도윤", "예준", "시우", "하준", "주원", "지호", "준서", "건우", "현우", "우진", "선우", "서진", "연우", "유준", "정우", "승우", "지훈", "태윤", "동현", "성민", "재준", "민성", "진우", "형준", "대현", "태민", "상현", "원준"];
+const GIVEN_F = ["서연", "지우", "하윤", "서윤", "지유", "채원", "수아", "지아", "하은", "예린", "유진", "수빈", "지원", "은서", "다은", "소율", "예원", "민서", "가은", "윤서", "혜린", "나연", "세아", "아린", "보민", "정원", "소연", "지현", "예진", "하린"];
+/* ============================================================
+   2. 샘플 데이터 생성 (결정적 · 핸드SOS 상세조회와 동일한 행 구조)
+   ============================================================ */
+const SAMPLE_PROFILES = {
+  geondae: {
+    annual: 900000000, avg: 69000, newRate: 0.23, memberRate: 0.36, prepaidShare: 0.075, useShare: 0.055,
+    designers: [
+      { n: "김도현 원장", w: 0.34 }, { n: "박세준 실장", w: 0.22 }, { n: "이현우 디자이너", w: 0.16 },
+      { n: "정민재 디자이너", w: 0.14 }, { n: "최우진 디자이너", w: 0.09 }, { n: "한지훈 디자이너", w: 0.05 }
+    ]
+  },
+  sinsa: {
+    annual: 700000000, avg: 71000, newRate: 0.22, memberRate: 0.32, prepaidShare: 0.062, useShare: 0.05,
+    designers: [
+      { n: "오세영 원장", w: 0.3 }, { n: "이도훈 실장", w: 0.2, until: "2026-11" },
+      { n: "강민수 디자이너", w: 0.18 }, { n: "윤태경 디자이너", w: 0.17 }, { n: "조은비 디자이너", w: 0.15 }
+    ],
+    drop: { "2026-10": 0.86, "2026-11": 0.70 }
+  },
+  wangsimni: {
+    annual: 400000000, avg: 62000, newRate: 0.3, memberRate: 0.2, prepaidShare: 0.05, useShare: 0.035,
+    designers: [
+      { n: "서지호 원장", w: 0.28 }, { n: "배준영 실장", w: 0.22 }, { n: "김하늘 디자이너", w: 0.2 },
+      { n: "문태오 디자이너", w: 0.18 }, { n: "남유리 디자이너", w: 0.12 }
+    ]
+  },
+  yangjae: {
+    annual: 300000000, avg: 64000, newRate: 0.19, memberRate: 0.6, prepaidShare: 0.07, useShare: 0.04,
+    depleteFrom: "2026-09", useDeplete: 0.11, saleDeplete: 0.025,
+    designers: [
+      { n: "권혁준 원장", w: 0.32 }, { n: "신동해 실장", w: 0.24 }, { n: "유가온 디자이너", w: 0.18 },
+      { n: "백승호 디자이너", w: 0.14 }, { n: "임서아 디자이너", w: 0.12 }
+    ]
+  }
+};
+const SEASON = [1.02, 1.0, 1.05, 1.02, 1.03, 0.96, 0.9, 0.93, 1.0, 1.04, 1.06, 1.08]; // 1~12월
+const WEEKDAY_FACTOR = [1.05, 0.84, 0.9, 0.98, 1.02, 1.16, 1.3]; // 일~토
+
+function generateSampleData() {
+  const rnd = mulberry32(SAMPLE_SEED);
+  const endKey = "2026-11";
+  const startKey = addMonths(endKey, -23);
+  const months = monthRange(startKey, endKey);
+  const rows = [];
+  let rowId = 0;
+
+  for (const br of BRANCHES) {
+    const prof = SAMPLE_PROFILES[br.id];
+    const openKey = br.open.slice(0, 7);
+    const pool = [];
+    const usedKeys = new Set();
+
+    months.forEach((mk, mi) => {
+      if (mk < openKey) return;
+      const openAge = monthDiff(openKey, mk);
+      const [yy, mm] = mk.split("-").map(Number);
+      let factor = SEASON[mm - 1] * (1 + 0.0035 * (mi - 14));
+      if (openAge < 12) factor *= clamp(0.55 + 0.08 * openAge, 0.5, 1);
+      if (prof.drop && prof.drop[mk]) factor *= prof.drop[mk];
+      factor *= 0.96 + rnd() * 0.08;
+
+      const depleting = prof.depleteFrom && mk >= prof.depleteFrom;
+      const useShare = depleting ? prof.useDeplete : prof.useShare;
+      const prepaidShare = (depleting ? prof.saleDeplete : prof.prepaidShare) * (prof.drop && prof.drop[mk] ? 1.08 : 1);
+      const monthRev = (prof.annual / 12) * factor;
+      const serviceTarget = monthRev * (1 - prepaidShare) / (1 - useShare);
+
+      const dim = daysInMonth(mk);
+      const isNow = mk === todayMonthKey();
+      const dayWeights = [];
+      let wSum = 0;
+      for (let d = 1; d <= dim; d++) {
+        const dow = new Date(yy, mm - 1, d).getDay();
+        const w = WEEKDAY_FACTOR[dow];
+        dayWeights.push(w); wSum += w;
+      }
+
+      const nowD = new Date();
+      const maxDay = (mk === todayMonthKey()) ? nowD.getDate() : dim;
+      for (let d = 1; d <= dim; d++) {
+        if (d > maxDay) break;
+        const date = mk + "-" + String(d).padStart(2, "0");
+        const dayRev = serviceTarget * dayWeights[d - 1] / wSum;
+        const visitCount = Math.max(1, Math.round(dayRev / prof.avg * (0.9 + rnd() * 0.2)));
+        const activeDesigners = prof.designers.filter(x => !x.until || mk < x.until);
+
+        for (let v = 0; v < visitCount; v++) {
+          const hour = pickWeighted(rnd, [10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20].map(h => ({ h, w: h < 12 ? 4 : h < 15 ? 7 : h < 18 ? 9 : h < 20 ? 8 : 4 }))).h;
+          const minute = Math.floor(rnd() * 6) * 10;
+          const time = String(hour).padStart(2, "0") + ":" + String(minute).padStart(2, "0");
+
+          // 고객 선택
+          let gender, name, isNew = false, cust;
+          const newRate = prof.newRate * (prof.drop && prof.drop[mk] ? 0.55 : 1) * (openAge < 6 ? 1.15 : 1);
+          if (pool.length < 30 || rnd() < newRate) {
+            gender = rnd() < 0.62 ? "남" : "여";
+            let key, tries = 0;
+            do {
+              name = SURNAME[Math.floor(rnd() * SURNAME.length)] +
+                (gender === "남" ? GIVEN_M[Math.floor(rnd() * GIVEN_M.length)] : GIVEN_F[Math.floor(rnd() * GIVEN_F.length)]);
+              key = name + "|" + gender; tries++;
+            } while (usedKeys.has(key) && tries < 40);
+            usedKeys.add(key);
+            cust = { n: name, g: gender, member: rnd() < prof.memberRate, dz: pickWeighted(rnd, activeDesigners).n };
+            pool.push(cust);
+            isNew = true;
+          } else {
+            const idx = pool.length - 1 - Math.floor(Math.pow(rnd(), 1.15) * Math.min(pool.length, 2600));
+            cust = pool[clamp(idx, 0, pool.length - 1)];
+            gender = cust.g; name = cust.n;
+          }
+          // 단골 담당자 유지 (85%)
+          let designer;
+          const activeNames = activeDesigners.map(x => x.n);
+          if (cust.dz && activeNames.indexOf(cust.dz) >= 0 && rnd() < 0.9) designer = cust.dz;
+          else { designer = pickWeighted(rnd, activeDesigners).n; cust.dz = designer; }
+          const visitType = isNew ? "신규" : (rnd() < 0.045 ? "대체" : "재방");
+
+          // 메뉴 1~3줄
+          const lineCount = rnd() < 0.66 ? 1 : rnd() < 0.78 ? 2 : 3;
+          const chosen = [];
+          for (let li = 0; li < lineCount; li++) {
+            const menuPool = MENUS.filter(m => m.g === "both" || m.g === gender);
+            let m = pickWeighted(rnd, menuPool);
+            if (chosen.some(c => c.name === m.name)) m = MENUS[0];
+            const disc = rnd() < 0.12 ? Math.round(m.price * 0.1 / 100) * 100 : 0;
+            chosen.push({ name: m.name, detail: m.detail, price: m.price, disc });
+          }
+          const totalPay = chosen.reduce((a, c) => a + c.price - c.disc, 0);
+          const usePrepaid = cust.member && rnd() < (useShare / Math.max(0.05, prof.memberRate));
+          const payTotal = usePrepaid ? 0 : totalPay;
+          const preTotal = usePrepaid ? totalPay : 0;
+          let method = "card";
+          if (!usePrepaid) {
+            const r = rnd();
+            method = r < 0.46 ? "card" : r < 0.84 ? "pay" : r < 0.92 ? "cash" : "bank";
+          }
+          let accPay = 0, accPre = 0;
+          chosen.forEach((c, i) => {
+            const amt = c.price - c.disc;
+            const last = i === chosen.length - 1;
+            const preRow = last ? (preTotal - accPre) : Math.round(preTotal * amt / totalPay);
+            const payRow = last ? (payTotal - accPay) : Math.round(payTotal * amt / totalPay);
+            accPre += preRow; accPay += payRow;
+            const row = {
+              d: date, t: time, b: br.id, n: name, g: gender, k: "시술",
+              menu: c.name, detail: c.detail, dz: designer,
+              list: c.price, disc: c.disc, paid: amt,
+              cash: method === "cash" ? payRow : 0, card: method === "card" ? payRow : 0,
+              bank: method === "bank" ? payRow : 0, pay: method === "pay" ? payRow : 0,
+              etc: 0, credit: 0, visit: visitType, pre: preRow, id: ++rowId
+            };
+            rows.push(row);
+          });
+        }
+      }
+
+      // 정액권 판매
+      const saleTarget = monthRev * prepaidShare;
+      let acc = 0, guard = 0;
+      while (acc < saleTarget && guard++ < 400) {
+        const prod = pickWeighted(rnd, PREPAID_PRODUCTS);
+        const isNewBuyer = rnd() < 0.35;
+        let buyer;
+        if (isNewBuyer || pool.length < 10) {
+          const g = rnd() < 0.62 ? "남" : "여";
+          let key, nm, tries = 0;
+          do {
+            nm = SURNAME[Math.floor(rnd() * SURNAME.length)] + (g === "남" ? GIVEN_M[Math.floor(rnd() * GIVEN_M.length)] : GIVEN_F[Math.floor(rnd() * GIVEN_F.length)]);
+            key = nm + "|" + g; tries++;
+          } while (usedKeys.has(key) && tries < 40);
+          usedKeys.add(key);
+          buyer = { n: nm, g, member: true, dz: pickWeighted(rnd, prof.designers.filter(x => !x.until || mk < x.until)).n };
+          pool.push(buyer);
+        } else {
+          buyer = pool[Math.floor(rnd() * pool.length)];
+          buyer.member = true;
+        }
+        const d = 1 + Math.floor(rnd() * (isNow ? new Date().getDate() : daysInMonth(mk)));
+        const date = mk + "-" + String(d).padStart(2, "0");
+        const time = String(10 + Math.floor(rnd() * 10)).padStart(2, "0") + ":" + String(Math.floor(rnd() * 6) * 10).padStart(2, "0");
+        const activeDesigners = prof.designers.filter(x => !x.until || mk < x.until);
+        const dz = rnd() < 0.22 ? "회원권" : buyer.dz || pickWeighted(rnd, activeDesigners).n;
+        const payMethod = rnd() < 0.6 ? "card" : "pay";
+        acc += prod.price;
+        rows.push({
+          d: date, t: time, b: br.id, n: buyer.n, g: buyer.g, k: "정액",
+          menu: prod.name, detail: "[" + nfmt(prod.price + prod.sessions * 2000) + "] 원충전", dz,
+          list: prod.price, disc: 0, paid: prod.price,
+          cash: 0, card: payMethod === "card" ? prod.price : 0,
+          bank: 0, pay: payMethod === "pay" ? prod.price : 0, etc: 0, credit: 0,
+          visit: isNewBuyer ? "신규" : "재방", pre: 0, id: ++rowId
+        });
+      }
+    });
+  }
+  rows.sort((a, b) => (a.d + a.t).localeCompare(b.d + b.t));
+  return rows;
+}
+
+/* 샘플 양식 CSV (핸드SOS 상세조회 열 이름 그대로) */
+const TEMPLATE_COLUMNS = ["날짜", "고객명", "성별", "구분", "메뉴", "상세메뉴", "담당", "판매가", "할인율", "할인액", "이벤트명",
+  "결제액", "현금", "현금발행", "카드", "통장", "통장발행", "Pay", "기타", "외상", "결제P", "적립P", "방문", "영업구분"];
+
+function buildTemplateCSV() {
+  const sample = [
+    ["2026-11-24 13:39", "홍길동", "남", "시술", "커트", "시그니처 커트", "김도현 원장", "32000", "0", "0", "", "32000", "0", "", "32000", "0", "", "0", "0", "0", "0", "0", "재방", ""],
+    ["2026-11-24 14:10", "김서연", "여", "시술", "컬러", "새치 커버 컬러", "박세준 실장", "105000", "0", "0", "", "105000", "0", "", "0", "0", "", "105000", "0", "0", "0", "0", "신규", ""],
+    ["2026-11-24 15:02", "이준호", "남", "시술", "커트", "시그니처 커트", "김도현 원장", "32000", "0", "0", "", "32000", "0", "", "0", "0", "", "0", "0", "0", "0", "0", "재방", ""],
+    ["2026-11-25 11:20", "박지훈", "남", "정액", "20회원", "[220,000] 원충전", "회원권", "200000", "0", "0", "", "200000", "0", "", "200000", "0", "", "0", "0", "0", "0", "0", "재방", ""],
+    ["2026-11-25 16:45", "정민수", "남", "시술", "남성펌", "볼륨 매직펌", "이현우 디자이너", "130000", "0", "0", "", "130000", "0", "", "0", "0", "", "0", "0", "0", "130000", "0", "재방", ""]
+  ];
+  const lines = [TEMPLATE_COLUMNS.join(",")].concat(sample.map(r => r.map(c => /[",\n]/.test(c) ? '"' + String(c).replace(/"/g, '""') + '"' : c).join(",")));
+  return "\uFEFF" + lines.join("\r\n");
+}
+/* ============================================================
+   3. 집계 · 지표 계산
+   ============================================================ */
+function emptyMonth() {
+  return {
+    rev: 0, service: 0, preconSale: 0, preconUse: 0, preconCount: 0, preconUseCount: 0,
+    visits: new Set(), visitRows: 0, list: 0, disc: 0,
+    newVisits: new Set(), reVisits: new Set(), etcVisits: new Set(),
+    customers: new Set(), newCustomers: new Set(),
+    dz: {}, menu: {}, pay: { cash: 0, card: 0, bank: 0, pay: 0, etc: 0, credit: 0 },
+    day: {}, dayCash: {}, dayService: {}, dayVisitSet: {}, prepaidProducts: {}, gender: { "남": 0, "여": 0 }
+  };
+}
+
+function ensureDz(M, name) {
+  if (!M.dz[name]) M.dz[name] = { rev: 0, visits: new Set(), cust: new Set(), newC: new Set() };
+  return M.dz[name];
+}
+
+function aggregate(rows) {
+  const byBranch = {};
+  const customerIndex = {};      // bid -> Map(key -> {name,g,first,months:Set})
+  const monthSet = new Set();
+  let minD = null, maxD = null;
+
+  BRANCHES.forEach(b => { byBranch[b.id] = {}; customerIndex[b.id] = new Map(); });
+
+  for (const r of rows) {
+    const bid = r.b;
+    if (!byBranch[bid]) continue;
+    const mk = r.d.slice(0, 7);
+    if (mk.length !== 7) continue;
+    monthSet.add(mk);
+    if (!minD || r.d < minD) minD = r.d;
+    if (!maxD || r.d > maxD) maxD = r.d;
+
+    const M = byBranch[bid][mk] || (byBranch[bid][mk] = emptyMonth());
+    const vid = r.d + "|" + (r.t || "") + "|" + r.n + "|" + r.g;
+    const ckey = r.n + "|" + r.g;
+    const isService = r.k !== "정액";
+
+    if (isService) {
+      const paySum = (r.cash + r.card + r.bank + r.pay + r.etc + r.credit);
+      const pre = Math.max(0, Math.round(r.paid - paySum));
+      M.service += r.paid;
+      M.rev += paySum;
+      M.list += r.list;
+      M.disc += r.disc;
+      M.visitRows++;
+      M.pay.cash += r.cash; M.pay.card += r.card; M.pay.bank += r.bank;
+      M.pay.pay += r.pay; M.pay.etc += r.etc; M.pay.credit += r.credit;
+      M.preconUse += pre;
+      if (pre > 0) M.preconUseCount++;
+      M.visits.add(vid);
+      M.customers.add(ckey);
+      if (r.visit === "신규") { M.newVisits.add(vid); M.newCustomers.add(ckey); }
+      else if (r.visit === "재방") M.reVisits.add(vid);
+      else M.etcVisits.add(vid);
+
+      const dz = ensureDz(M, r.dz || "(미지정)");
+      dz.rev += r.paid; dz.visits.add(vid); dz.cust.add(ckey);
+      if (r.visit === "신규") dz.newC.add(ckey);
+
+      const m = M.menu[r.menu] || (M.menu[r.menu] = { rev: 0, count: 0 });
+      m.rev += r.paid; m.count++;
+      M.gender[r.g] = (M.gender[r.g] || 0) + 1;
+      const day = r.d.slice(8, 10);
+      M.day[day] = (M.day[day] || 0) + r.paid;
+      M.dayCash[day] = (M.dayCash[day] || 0) + paySum;
+      M.dayService[day] = (M.dayService[day] || 0) + r.paid;
+      (M.dayVisitSet[day] || (M.dayVisitSet[day] = new Set())).add(vid);
+    } else {
+      M.preconSale += r.paid;
+      M.rev += r.paid;
+      M.preconCount++;
+      const p = M.prepaidProducts[r.menu] || (M.prepaidProducts[r.menu] = { count: 0, rev: 0 });
+      p.count++; p.rev += r.paid;
+      M.pay.cash += r.cash; M.pay.card += r.card; M.pay.bank += r.bank;
+      M.pay.pay += r.pay; M.pay.etc += r.etc; M.pay.credit += r.credit;
+      const d2 = r.d.slice(8, 10);
+      M.dayCash[d2] = (M.dayCash[d2] || 0) + r.paid;
+    }
+
+    // 고객 인덱스 (전 지점 고객 유지율 계산용)
+    const ci = customerIndex[bid];
+    let c = ci.get(ckey);
+    if (!c) { c = { name: r.n, g: r.g, first: mk, months: new Set() }; ci.set(ckey, c); }
+    if (mk < c.first) c.first = mk;
+    c.months.add(mk);
+  }
+
+  const months = Array.from(monthSet).sort();
+  return { byBranch, customerIndex, months, from: minD, to: maxD, rowCount: rows.length };
+}
+
+/* 월 지표(단일 지점) */
+function monthMetrics(agg, bid, mk) {
+  const M = agg.byBranch[bid] && agg.byBranch[bid][mk];
+  if (!M) return null;
+  const visits = M.visits.size;
+  const newVisits = M.newVisits.size;
+  const reVisits = M.reVisits.size;
+  const etcVisits = M.etcVisits.size;
+  const uniqueCust = M.customers.size;
+  const newCust = M.newCustomers.size;
+  let dzSumCust = 0;
+  Object.values(M.dz).forEach(d => { dzSumCust += d.cust.size; });
+  const activeDays = Object.keys(M.day).length;
+  return {
+    key: mk, bid, rev: M.rev, service: M.service, preconSale: M.preconSale, preconUse: M.preconUse,
+    preconNet: M.preconSale - M.preconUse, preconCount: M.preconCount, preconUseCount: M.preconUseCount,
+    visits, visitRows: M.visitRows, newVisits, reVisits, etcVisits,
+    uniqueCust, newCust, dzSumCust, dupCust: Math.max(0, dzSumCust - uniqueCust),
+    avgTicket: visits ? M.service / visits : 0,
+    list: M.list, disc: M.disc,
+    avgDaily: activeDays ? M.rev / activeDays : 0,
+    activeDays,
+    newRateByVisit: visits ? newVisits / visits : 0,
+    reRateByVisit: visits ? reVisits / visits : 0,
+    newRateByCust: uniqueCust ? newCust / uniqueCust : 0,
+    discountRate: M.list ? M.disc / M.list : 0,
+    cardPay: M.pay.card + M.pay.pay,
+    cashPay: M.pay.cash, bankPay: M.pay.bank,
+    dz: M.dz, menu: M.menu, gender: M.gender, pay: M.pay, day: M.day, dayCash: M.dayCash,
+    dayService: M.dayService, dayVisits: (() => { const o = {}; Object.keys(M.dayVisitSet).forEach(d => { o[d] = M.dayVisitSet[d].size; }); return o; })(),
+    prepaidProducts: M.prepaidProducts,
+    topDesigner: (() => {
+      let best = null;
+      Object.entries(M.dz).forEach(([n, d]) => { if (!best || d.rev > best.rev) best = { name: n, rev: d.rev }; });
+      return best;
+    })()
+  };
+}
+
+/* 본사 통합 (지점 합산 · 고유 고객은 지점별 합) */
+function hqMetrics(agg, mk) {
+  const parts = BRANCHES.map(b => monthMetrics(agg, b.id, mk)).filter(Boolean);
+  if (!parts.length) return null;
+  const sum = k => parts.reduce((a, p) => a + (p[k] || 0), 0);
+  const dz = {};
+  parts.forEach(p => Object.entries(p.dz).forEach(([n, d]) => {
+    const key = p.bid + "·" + n;
+    if (!dz[key]) dz[key] = { rev: 0, visits: new Set(), cust: new Set(), newC: new Set() };
+    dz[key].rev += d.rev; d.visits.forEach(v => dz[key].visits.add(v)); d.cust.forEach(c => dz[key].cust.add(c));
+  }));
+  const avgTicket = sum("visits") ? sum("service") / sum("visits") : 0;
+  const menu = {}, gender = { "남": 0, "여": 0 }, prepaidProducts = {};
+  parts.forEach(p => {
+    Object.entries(p.menu).forEach(([n, v]) => {
+      if (!menu[n]) menu[n] = { rev: 0, count: 0 };
+      menu[n].rev += v.rev; menu[n].count += v.count;
+    });
+    gender["남"] += p.gender["남"] || 0; gender["여"] += p.gender["여"] || 0;
+    Object.entries(p.prepaidProducts).forEach(([n, v]) => {
+      if (!prepaidProducts[n]) prepaidProducts[n] = { count: 0, rev: 0 };
+      prepaidProducts[n].count += v.count; prepaidProducts[n].rev += v.rev;
+    });
+  });
+  const listSum = sum("list"), discSum = sum("disc");
+  return {
+    key: mk, bid: "hq", parts, rev: sum("rev"), service: sum("service"),
+    preconSale: sum("preconSale"), preconUse: sum("preconUse"), preconNet: sum("preconSale") - sum("preconUse"),
+    preconCount: sum("preconCount"), preconUseCount: sum("preconUseCount"),
+    visits: sum("visits"), visitRows: sum("visitRows"), newVisits: sum("newVisits"),
+    reVisits: sum("reVisits"), etcVisits: sum("etcVisits"),
+    uniqueCust: sum("uniqueCust"), newCust: sum("newCust"),
+    dzSumCust: sum("dzSumCust"), dupCust: Math.max(0, sum("dzSumCust") - sum("uniqueCust")),
+    avgTicket, avgDaily: sum("avgDaily"), activeDays: Math.max(...parts.map(p => p.activeDays)),
+    newRateByVisit: sum("visits") ? sum("newVisits") / sum("visits") : 0,
+    reRateByVisit: sum("visits") ? sum("reVisits") / sum("visits") : 0,
+    newRateByCust: sum("uniqueCust") ? sum("newCust") / sum("uniqueCust") : 0,
+    discountRate: listSum ? discSum / listSum : 0,
+    dz, menu, gender, pay: {
+      cash: sum("cashPay"), card: parts.reduce((a, p) => a + p.cardPay, 0), bank: sum("bankPay")
+    },
+    day: {}, prepaidProducts,
+    cardPay: parts.reduce((a, p) => a + p.cardPay, 0), cashPay: sum("cashPay"), bankPay: sum("bankPay")
+  };
+}
+
+function metricsOf(bid, mk) {
+  if (!S.stats) return null;
+  return bid === "hq" ? hqMetrics(S.stats, mk) : monthMetrics(S.stats, bid, mk);
+}
+
+/* 과거 비교: 이번 달이면 같은 일수만큼(동일 기간) 비교 */
+function priorComparableRev(bid, mk, back) {
+  back = back || 1;
+  if (!S.stats) return null;
+  if (bid === "hq") {
+    let sum = 0, any = false;
+    BRANCHES.forEach(b => { const v = priorComparableRev(b.id, mk, back); if (v !== null) { sum += v; any = true; } });
+    return any ? sum : null;
+  }
+  const prev = monthMetrics(S.stats, bid, addMonths(mk, -back));
+  const cur = monthMetrics(S.stats, bid, mk);
+  if (!prev) return null;
+  if (!cur || mk !== todayMonthKey()) return prev.rev;
+  const days = Object.keys(cur.dayCash || {}).map(Number);
+  const n = days.length ? Math.max.apply(null, days) : 0;
+  if (!n) return prev.rev;
+  let s = 0;
+  for (let d = 1; d <= n; d++) s += (prev.dayCash[String(d).padStart(2, "0")] || 0);
+  return s;
+}
+function prevComparableRev(bid, mk) { return priorComparableRev(bid, mk, 1); }
+function priorComparable(bid, mk, back, kind) {
+  if (!S.stats) return null;
+  if (bid === "hq") {
+    let sum = 0, any = false;
+    BRANCHES.forEach(b => { const v = priorComparable(b.id, mk, back, kind); if (v !== null) { sum += v; any = true; } });
+    return any ? sum : null;
+  }
+  const prev = monthMetrics(S.stats, bid, addMonths(mk, -back));
+  if (!prev) return null;
+  const cur = monthMetrics(S.stats, bid, mk);
+  const full = kind === "rev" ? prev.rev : kind === "service" ? prev.service : prev.visits;
+  if (!cur || mk !== todayMonthKey()) return full;
+  const days = Object.keys(cur.dayCash || {}).map(Number);
+  const n = days.length ? Math.max.apply(null, days) : 0;
+  if (!n) return full;
+  if (kind === "visits") {
+    let s = 0;
+    for (let d = 1; d <= n; d++) s += (prev.dayVisits[String(d).padStart(2, "0")] || 0);
+    return s;
+  }
+  const map = kind === "rev" ? prev.dayCash : prev.dayService;
+  let s = 0;
+  for (let d = 1; d <= n; d++) s += (map[String(d).padStart(2, "0")] || 0);
+  return s;
+}
+function isPartialMonth(mk) {
+  return mk === todayMonthKey();
+}
+function prevLabel(mk) {
+  return isPartialMonth(mk) ? "전월 동일기간" : "전월";
+}
+
+/* 3개월 코호트 유지율 (단일 지점) */
+function retention3(bid, mk) {
+  const agg = S.stats;
+  const ci = agg.customerIndex[bid];
+  if (!ci) return null;
+  const cohortMonth = addMonths(mk, -3);
+  let cohort = 0, kept = 0;
+  ci.forEach(c => {
+    if (c.first !== cohortMonth) return;
+    cohort++;
+    const m1 = addMonths(cohortMonth, 1), m2 = addMonths(cohortMonth, 2), m3 = addMonths(cohortMonth, 3);
+    if (c.months.has(m1) || c.months.has(m2) || c.months.has(m3)) kept++;
+  });
+  return { cohort, kept, rate: cohort ? kept / cohort : null, cohortMonth };
+}
+
+/* 기간 합계 (단일 지점, from~to) */
+function rangeSum(bid, from, to) {
+  const out = { rev: 0, service: 0, preconSale: 0, preconUse: 0, visits: 0, newVisits: 0, reVisits: 0, etcVisits: 0, uniqueCust: 0, newCust: 0, dzSumCust: 0 };
+  const seen = new Set();
+  monthRange(from, to).forEach(mk => {
+    const m = monthMetrics(S.stats, bid, mk);
+    if (!m) return;
+    out.rev += m.rev; out.service += m.service; out.preconSale += m.preconSale; out.preconUse += m.preconUse;
+    out.visits += m.visits; out.newVisits += m.newVisits; out.reVisits += m.reVisits; out.etcVisits += m.etcVisits;
+    out.uniqueCust += m.uniqueCust; out.newCust += m.newCust; out.dzSumCust += m.dzSumCust;
+  });
+  return out;
+}
+
+/* ---------- 진단 엔진 ---------- */
+function diagForBranch(bid, mk) {
+  const cur = monthMetrics(S.stats, bid, mk);
+  const out = [];
+  const br = BRANCH_MAP[bid];
+  if (!cur) {
+    out.push({
+      id: bid + "-nodata", sev: 1, branch: bid, title: "이 달 자료가 없습니다",
+      metric: "—", why: monthLabel(mk) + "에 해당 지점의 POS 거래가 없습니다. 업로드 기간을 확인하세요.",
+      act: "데이터 업로드 탭에서 " + monthLabel(mk) + " 자료를 올리면 지표와 진단이 채워집니다."
+    });
+    return out;
+  }
+  const prev = monthMetrics(S.stats, bid, addMonths(mk, -1));
+  const ly = monthMetrics(S.stats, bid, addMonths(mk, -12));
+  const openKey = openDateOf(bid).slice(0, 7);
+  const openAge = monthDiff(openKey, mk);
+
+  // 1) 오픈 초기 보정
+  if (openAge >= 0 && openAge < 9) {
+    out.push({
+      id: bid + "-open", sev: 1, branch: bid, title: "오픈 " + (openAge + 1) + "개월차 — 비교 기준 보정",
+      metric: "오픈 " + openKey,
+      why: br.name + "은 " + openKey + " 오픈으로 성장 구간입니다. 전월·전년 대비 하락은 매장 문제가 아닐 수 있어, 이 앱은 일평균 추세와 신규 고객 비중을 함께 봅니다.",
+      act: "초기 목표는 전년 비교가 아니라 3개월 전 일평균 대비로 잡으세요. 인근 상권 제휴·오픈 리뷰 이벤트로 신규 유입을 계속 만들어야 합니다."
+    });
+  }
+
+  // 2) 매출 급감
+  if (prev && prev.rev > 0) {
+    const prevCmpRev = prevComparableRev(bid, mk);
+    const ch = prevCmpRev ? cur.rev / prevCmpRev - 1 : cur.rev / prev.rev - 1;
+    const lyCmp = ly ? priorComparableRev(bid, mk, 12) : null;
+    const chLy = lyCmp ? cur.rev / lyCmp - 1 : null;
+    if (ch <= -0.12 || (chLy !== null && chLy <= -0.18)) {
+      const sev = ch <= -0.22 || (chLy !== null && chLy <= -0.3) ? 3 : 2;
+      const cmpLabel = isPartialMonth(mk) ? "전월 동일기간" : "전월";
+      const useYoy = !(ch <= -0.12) && chLy !== null;
+      out.push({
+        id: bid + "-drop", sev, branch: bid, title: "매출 급감",
+        metric: useYoy ? (chLy >= 0 ? "+" : "") + pct(chLy) + " (전년 동월)" : (ch >= 0 ? "+" : "") + pct(ch) + " (" + cmpLabel + ")",
+        why: (useYoy ? "전년 동일기간 " : (isPartialMonth(mk) ? "전월 동일기간 " : "전월 ")) + wonShort(useYoy ? (lyCmp || 0) : (prevCmpRev || prev.rev)) + "에서 " + wonShort(cur.rev) + "으로 (" + won(Math.round(cur.rev - (useYoy ? (lyCmp || 0) : (prevCmpRev || prev.rev)))) + ")." +
+          (chLy !== null && !useYoy ? " 전년 동월 대비 " + pct(chLy) + "." : ""),
+        act: "감소분을 디자이너·메뉴·방문유형으로 쪼개 보세요. 디자이너 탭에서 전월 대비 하락 폭이 큰 담당자를 확인하고, 신규 유입(신규 방문 건수)이 줄었는지 먼저 확인합니다."
+      });
+    }
+  }
+
+  // 3) 신규 유입 하락
+  if (prev && prev.newVisits >= 10) {
+    const ch = cur.newVisits / prev.newVisits - 1;
+    if (ch <= -0.2) {
+      out.push({
+        id: bid + "-newdrop", sev: ch <= -0.35 ? 3 : 2, branch: bid, title: "신규 유입 하락",
+        metric: pct(ch) + " (" + cur.newVisits + "건)",
+        why: "신규 방문이 " + prev.newVisits + "건에서 " + cur.newVisits + "건으로 줄었습니다. 신규 고객 비중은 " + pct(cur.newRateByVisit) + "입니다.",
+        act: "네이버 플레이스 예약·리뷰, 인스타 릴스(시술 전후), 지역 직장인 제휴를 2주 단위로 집행하고 유입 경로를 예약 메모에 남기게 하세요."
+      });
+    }
+  }
+
+  // 4) 정액권 순소진
+  if (cur.preconUse > 0 || cur.preconSale > 0) {
+    const net = cur.preconSale - cur.preconUse;
+    const ratio = cur.preconSale ? cur.preconUse / cur.preconSale : 99;
+    if (net < 0 && ratio > 1.02) {
+      out.push({
+        id: bid + "-prepaid", sev: ratio > 1.6 ? 3 : 2, branch: bid, title: "정액권 순소진",
+        metric: wonShort(net),
+        why: "판매 " + won(cur.preconSale) + " vs 사용 " + won(cur.preconUse) + ". 선수금이 " + won(-net) + " 줄었습니다. 사용/판매 배율 " + ratio.toFixed(2) + "배.",
+        act: "20회권 리뉴얼(충전 시 1회 추가)로 재충전을 유도하고, 잔여 5회 이하 고객에게 문자로 충전 안내를 보내세요. 사용만 늘고 판매가 없는 상태가 3개월 이어지면 지점 현금흐름이 먼저 말라붙습니다."
+      });
+    } else if (net > 0 && cur.preconSale > 0) {
+      out.push({
+        id: bid + "-prepaid-ok", sev: 0, branch: bid, title: "정액권 선수금 순증",
+        metric: "+" + wonShort(net),
+        why: "판매 " + won(cur.preconSale) + " / 사용 " + won(cur.preconUse) + ". 선수금이 늘었습니다. 다만 판매분은 아직 매출이 아니라 부채입니다.",
+        act: "충전 고객이 실제로 소진하도록 8주 내 방문 알림을 운영하세요. 판매만 앞서면 환불·소진 부담이 뒤로 쌓입니다."
+      });
+    }
+  }
+
+  // 5) 디자이너 공백
+  if (prev) {
+    Object.entries(prev.dz).forEach(([name, d]) => {
+      const now = cur.dz[name];
+      const nowRev = now ? now.rev : 0;
+      const share = prev.rev ? d.rev / prev.rev : 0;
+      if (d.rev > 0 && share >= 0.08) {
+        const ch = nowRev / d.rev - 1;
+        if (ch <= -0.4) {
+          out.push({
+            id: bid + "-dz-" + name, sev: nowRev === 0 ? 3 : 2, branch: bid, title: "디자이너 공백 · " + name,
+            metric: pct(ch) + " (" + wonShort(d.rev) + " → " + wonShort(nowRev) + ")",
+            why: "전월 매출 비중 " + pct(share) + "인 담당자의 매출이 " + wonShort(d.rev - nowRev) + " 줄었습니다." + (nowRev === 0 ? " 이번 달 거래가 없습니다(퇴사·휴직 가능)." : ""),
+            act: "이탈 사유(급여·고객 배분·근무표)를 확인하고, 남은 담당자에게 고객을 재배치하세요. 재배치 고객에게는 담당자 변경 안내를 먼저 보내야 이탈을 막습니다."
+          });
+        }
+      }
+    });
+  }
+
+  // 6) 객단가 하락
+  if (prev && prev.avgTicket > 0) {
+    const ch = cur.avgTicket / prev.avgTicket - 1;
+    if (ch <= -0.07) {
+      out.push({
+        id: bid + "-ticket", sev: 2, branch: bid, title: "객단가 하락",
+        metric: pct(ch),
+        why: "객단가가 " + won(prev.avgTicket) + "에서 " + won(cur.avgTicket) + "으로 내려갔습니다. 방문은 " + cur.visits + "건으로 " + (prev.visits ? pct(cur.visits / prev.visits - 1) : "—") + " 변했습니다.",
+        act: "커트 단품 위주로 구성이 내려갔는지 메뉴 탭에서 확인하세요. 클리닉·컬러 업셀 스크립트를 교육하고, 세트메뉴를 예약 화면 기본 노출로 바꿉니다."
+      });
+    }
+  }
+
+  // 7) 고객 집중
+  if (cur.topDesigner && cur.rev > 0) {
+    const share = cur.topDesigner.rev / cur.rev;
+    if (share >= 0.45) {
+      out.push({
+        id: bid + "-concentration", sev: 2, branch: bid, title: "매출 집중 리스크",
+        metric: pct(share) + " · " + cur.topDesigner.name,
+        why: "한 담당자가 시술 매출의 " + pct(share) + "를 차지합니다. 이 담당자가 쉬면 매장 매출이 그대로 빠집니다.",
+        act: "신규 고객을 라운드로빈으로 배분하고, 2인자 담당자의 단가·시술 범위를 올려 의존도를 40% 아래로 낮추세요."
+      });
+    }
+  }
+
+  // 8) 재방문율 하락
+  if (prev && prev.reRateByVisit > 0) {
+    const d = cur.reRateByVisit - prev.reRateByVisit;
+    if (d <= -0.05) {
+      out.push({
+        id: bid + "-retention", sev: 2, branch: bid, title: "재방문율 하락",
+        metric: pctPoint(d),
+        why: "재방문 비율이 " + pct(prev.reRateByVisit) + "에서 " + pct(cur.reRateByVisit) + "으로 내려갔습니다. 신규는 들어오는데 다시 오지 않는 상태일 수 있습니다.",
+        act: "시술 후 4주·8주 알림을 넣고, 8주 이상 미방문 고객에게 담당자 이름으로 안부 문자를 보내세요. 재방문율은 광고보다 싸게 매출을 지킵니다."
+      });
+    }
+  }
+
+  // 9) 좋은 신호
+  if (prev && prev.rev > 0) {
+    const ch = cur.rev / prev.rev - 1;
+    if (ch >= 0.1) {
+      out.push({
+        id: bid + "-good", sev: 0, branch: bid, title: "매출 성장",
+        metric: "+" + pct(ch) + " (전월)",
+        why: "실매출이 " + wonShort(prev.rev) + "에서 " + wonShort(cur.rev) + "으로 늘었습니다.",
+        act: "성장을 만든 담당자·메뉴를 확인하고 같은 방식을 다음 달에도 반복하세요. 늘어난 매출 대비 인건비·재료비 비율이 같이 오르지 않았는지 손익 탭에서 확인합니다."
+      });
+    }
+  }
+  return out;
+}
+
+function diagnosticsFor(branchId, mk) {
+  if (branchId === "hq") {
+    let all = [];
+    BRANCHES.forEach(b => { all = all.concat(diagForBranch(b.id, mk)); });
+    return all.sort((a, b) => b.sev - a.sev);
+  }
+  return diagForBranch(branchId, mk).sort((a, b) => b.sev - a.sev);
+}
+/* ============================================================
+   4. POS 파일 파싱 (핸드SOS 상세조회 · 엑셀/CSV/HTML-xls)
+   ============================================================ */
+const HEADER_MAP = {
+  date: ["날짜", "일자", "결제일", "결제일시", "방문일", "시술일", "date"],
+  time: ["시간", "시각", "결제시간", "방문시간"],
+  name: ["고객명", "고객", "이름", "회원명", "성명", "customer"],
+  gender: ["성별", "sex"],
+  kind: ["구분", "매출구분", "분류"],
+  menu: ["메뉴", "시술메뉴", "항목", "품목"],
+  detail: ["상세메뉴", "상세", "시술내용"],
+  designer: ["담당", "담당자", "디자이너", "직원", "실장", "원장"],
+  list: ["판매가", "정가", "금액", "시술금액"],
+  disc: ["할인액", "할인"],
+  paid: ["결제액", "결제금액", "실결제", "수납액", "합계금액"],
+  cash: ["현금", "현금결제"],
+  card: ["카드", "카드결제"],
+  bank: ["통장", "계좌이체", "통장결제"],
+  pay: ["pay", "페이", "간편결제"],
+  etc: ["기타", "기타결제"],
+  credit: ["외상", "외상대", "외상수금"],
+  visit: ["방문", "방문구분", "고객구분", "신규재방", "방문유형"],
+  branch: ["지점", "매장", "매장명", "지점명", "store"]
+};
+const DATE_HINTS = ["날짜", "일자", "결제일", "방문일", "date"];
+
+function normHeader(h) {
+  return String(h || "").replace(/[\s*()[\]{}]/g, "").replace(/[＿_]/g, "").toLowerCase();
+}
+function decodeText(buf) {
+  const bytes = new Uint8Array(buf);
+  const head = new TextDecoder("utf-8").decode(bytes.slice(0, 1400)).toLowerCase();
+  const euckr = /euc-kr|ks_c_5601|ksc5601|cp949/.test(head);
+  try {
+    return new TextDecoder(euckr ? "euc-kr" : "utf-8", { fatal: euckr }).decode(bytes);
+  } catch (e) {
+    try { return new TextDecoder("euc-kr").decode(bytes); } catch (e2) { return new TextDecoder("utf-8").decode(bytes); }
+  }
+}
+function parseCSVText(text) {
+  const rows = [];
+  let row = [], cell = "", q = false;
+  text = text.replace(/^\uFEFF Bout/, "").replace(/^\uFEFF/, "");
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (q) {
+      if (ch === '"') { if (text[i + 1] === '"') { cell += '"'; i++; } else q = false; }
+      else cell += ch;
+    } else if (ch === '"') q = true;
+    else if (ch === ",") { row.push(cell); cell = ""; }
+    else if (ch === "\n") { row.push(cell); rows.push(row); row = []; cell = ""; }
+    else if (ch === "\r") { }
+    else cell += ch;
+  }
+  if (cell.length || row.length) { row.push(cell); rows.push(row); }
+  return rows;
+}
+function matrixFromHtml(html) {
+  const doc = new DOMParser().parseFromString(html, "text/html");
+  const tables = Array.from(doc.querySelectorAll("table"));
+  let best = null, bestScore = -1;
+  for (const t of tables) {
+    const trs = Array.from(t.querySelectorAll("tr"));
+    if (!trs.length) continue;
+    const firstCells = Array.from(trs[0].children).map(td => normHeader(td.textContent));
+    let score = 0;
+    firstCells.forEach(c => { if (DATE_HINTS.some(h => c.includes(normHeader(h)))) score += 5; if (c.includes("고객")) score += 4; if (c.includes("담당")) score += 3; if (c.includes("결제")) score += 3; });
+    if (trs.length > 30) score += 2;
+    if (score > bestScore) { bestScore = score; best = trs; }
+  }
+  if (!best) return null;
+  return best.map(tr => Array.from(tr.children).map(td => (td.textContent || "").replace(/\s+/g, " ").trim()));
+}
+function matrixFromXlsx(buf) {
+  if (!window.XLSX) throw new Error("엑셀 라이브러리(SheetJS)를 불러오지 못했습니다. CSV나 핸드SOS 엑셀(HTML)로 저장해 올려 주세요.");
+  const wb = XLSX.read(new Uint8Array(buf), { type: "array", cellDates: false, raw: false });
+  let fallback = null;
+  for (const name of wb.SheetNames) {
+    const ws = wb.Sheets[name];
+    const matrix = XLSX.utils.sheet_to_json(ws, { header: 1, raw: false, defval: "" });
+    if (!matrix || !matrix.length) continue;
+    if (!fallback) fallback = matrix;
+    const head = matrix.slice(0, 12).map(r => r.map(normHeader));
+    const hasDate = head.some(r => r.some(c => DATE_HINTS.some(h => c.includes(normHeader(h)))));
+    const hasCust = head.some(r => r.some(c => c.includes("고객")));
+    if (hasDate && hasCust) return matrix;
+  }
+  return fallback;
+}
+
+function findHeaderRow(matrix) {
+  const limit = Math.min(matrix.length, 15);
+  for (let i = 0; i < limit; i++) {
+    const cells = matrix[i].map(normHeader);
+    let hits = 0;
+    Object.values(HEADER_MAP).forEach(syns => {
+      if (cells.some(c => syns.some(s => c === normHeader(s) || (s.length > 1 && c.includes(normHeader(s)))))) hits++;
+    });
+    if (hits >= 5) return i;
+  }
+  return -1;
+}
+function mapColumns(headerRow) {
+  const idx = {};
+  const cells = headerRow.map(normHeader);
+  Object.entries(HEADER_MAP).forEach(([key, syns]) => {
+    for (const s of syns) {
+      const ns = normHeader(s);
+      let at = cells.findIndex((c, i) => idx[i] === undefined && (c === ns));
+      if (at < 0) at = cells.findIndex((c, i) => idx[i] === undefined && ns.length > 1 && c.includes(ns));
+      if (at >= 0) { idx[key] = at; idx[at] = key; return; }
+    }
+  });
+  return idx;
+}
+function toNumber(v) {
+  if (v === null || v === undefined) return 0;
+  let s = String(v).replace(/[,\s원₩]/g, "").replace(/^\((.+)\)$/, "-$1");
+  if (!s || s === "-") return 0;
+  const n = Number(s);
+  return isFinite(n) ? n : 0;
+}
+function normalizeDate(v) {
+  if (v === null || v === undefined || v === "") return null;
+  if (typeof v === "number" || /^\d{5}$/.test(String(v).trim())) {
+    const serial = Number(v);
+    if (serial > 30000 && serial < 60000) {
+      const d = new Date(Date.UTC(1899, 11, 30) + serial * 86400000);
+      return d.toISOString().slice(0, 10);
+    }
+  }
+  let s = String(v).trim().replace(/[./]/g, "-");
+  const m = s.match(/(\d{2,4})-(\d{1,2})-(\d{1,2})/);
+  if (m) {
+    let y = Number(m[1]); if (y < 100) y += 2000;
+    return y + "-" + String(m[2]).padStart(2, "0") + "-" + String(m[3]).padStart(2, "0");
+  }
+  const m2 = s.match(/^(\d{4})(\d{2})(\d{2})$/);
+  if (m2) return m2[1] + "-" + m2[2] + "-" + m2[3];
+  const d = new Date(s);
+  if (!isNaN(d)) return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+  return null;
+}
+function findBranchFromName(name) {
+  const n = String(name);
+  for (const b of BRANCHES) {
+    if (n.includes(b.short)) return b.id;
+    if (b.id === "geondae" && n.includes("건대")) return b.id;
+    if (b.id === "wangsimni" && n.includes("왕십리")) return b.id;
+  }
+  return null;
+}
+
+/* 파일 하나 파싱 → 정규화 행 */
+function parseWorkbookMatrix(matrix, fallbackBranch) {
+  const hi = findHeaderRow(matrix);
+  if (hi < 0) {
+    const preview = matrix.slice(0, 3).map(r => r.slice(0, 8).join(" | ")).join(" / ");
+    throw new Error("거래 상세 표를 찾지 못했습니다. '날짜·고객명·담당·결제액' 열이 있는 상세조회 파일이 필요합니다. (감지된 내용: " + (preview.slice(0, 160) || "없음") + ")");
+  }
+  const idx = mapColumns(matrix[hi]);
+  if (idx.date === undefined) throw new Error("'날짜' 열을 찾지 못했습니다.");
+  const rows = [];
+  let skipped = 0, branch = fallbackBranch;
+
+  for (let r = hi + 1; r < matrix.length; r++) {
+    const line = matrix[r];
+    if (!line || !line.length) { skipped++; continue; }
+    const rawDate = line[idx.date];
+    const date = normalizeDate(rawDate);
+    if (!date || date < "2000-01-01") { skipped++; continue; }
+    const get = k => (idx[k] !== undefined ? line[idx[k]] : "");
+    const name = String(get("name") || "미상").trim() || "미상";
+    const menu = String(get("menu") || "").trim();
+    const detail = String(get("detail") || "").trim();
+    const kindRaw = String(get("kind") || "");
+    const paid = toNumber(get("paid"));
+    const list = toNumber(get("list")) || paid;
+    const isPrepaid = /정액|충전|회원권/.test(kindRaw) || /회원$|회원권/.test(menu);
+    if (!paid && !list) { skipped++; continue; }
+    const timeRaw = String(get("time") || "").trim();
+    let time = "";
+    const tm = String(rawDate).match(/(\d{1,2}):(\d{2})/) || timeRaw.match(/(\d{1,2}):(\d{2})/);
+    if (tm) time = String(tm[1]).padStart(2, "0") + ":" + tm[2];
+    const visitRaw = String(get("visit") || "");
+    const visit = /신규/.test(visitRaw) ? "신규" : /재방|재/.test(visitRaw) ? "재방" : /대체/.test(visitRaw) ? "대체" : /손님/.test(visitRaw) ? "손님" : (isPrepaid ? "재방" : "재방");
+    const gender = /여/.test(String(get("gender"))) ? "여" : "남";
+    const branchCell = String(get("branch") || "");
+    const rowBranch = findBranchFromName(branchCell) || fallbackBranch || "";
+    rows.push({
+      d: date, t: time, b: rowBranch, n: name, g: gender,
+      k: isPrepaid ? "정액" : "시술",
+      menu: menu || (isPrepaid ? "정액권" : "기타"),
+      detail, dz: String(get("designer") || "미지정").trim() || "미지정",
+      list, disc: toNumber(get("disc")), paid: paid || list,
+      cash: toNumber(get("cash")), card: toNumber(get("card")), bank: toNumber(get("bank")),
+      pay: toNumber(get("pay")), etc: toNumber(get("etc")), credit: toNumber(get("credit")),
+      visit, pre: 0, id: 0
+    });
+  }
+  if (!rows.length) throw new Error("인식된 거래 행이 0건입니다. 열 이름과 날짜 형식을 확인해 주세요.");
+  return { rows, skipped, headerRow: hi };
+}
+
+async function parseFile(file, fallbackBranch) {
+  const name = file.name.toLowerCase();
+  const buf = await file.arrayBuffer();
+  let matrix;
+  if (name.endsWith(".csv") || name.endsWith(".txt")) {
+    matrix = parseCSVText(decodeText(buf));
+  } else {
+    const head = decodeText(buf.slice(0, 800)).toLowerCase();
+    const isHtml = /<html|<table|<!doctype/.test(head);
+    if (isHtml) {
+      matrix = matrixFromHtml(decodeText(buf));
+      if (!matrix) throw new Error("HTML 표를 찾지 못했습니다.");
+    } else if (name.endsWith(".xlsx") || name.endsWith(".xls") || name.endsWith(".xlsm")) {
+      matrix = matrixFromXlsx(buf);
+    } else {
+      throw new Error("지원하지 않는 파일 형식입니다(.xlsx, .xls, .csv).");
+    }
+  }
+  if (!matrix || !matrix.length) throw new Error("파일이 비어 있습니다.");
+  return parseWorkbookMatrix(matrix, fallbackBranch);
+}
+/* ============================================================
+   5-A. 공용 UI 조각 · 대시보드 · 매출/고객
+   ============================================================ */
+function curBranch() { return S.role || "hq"; }
+function branchName(bid) { return bid === "hq" ? "본사 전체" : (BRANCH_MAP[bid] ? BRANCH_MAP[bid].name : bid); }
+function roleLabel() { return curBranch() === "hq" ? "본사 관리자" : branchName(curBranch()) + " 관리자"; }
+
+function hqCompare(mk, back) {
+  let cur = 0, base = 0, any = false, branches = 0;
+  BRANCHES.forEach(b => {
+    const a = monthMetrics(S.stats, b.id, mk);
+    const p = monthMetrics(S.stats, b.id, addMonths(mk, -back));
+    if (a && p) { cur += a.rev; base += priorComparableRev(b.id, mk, back) || p.rev; any = true; branches++; }
+  });
+  return any ? { cur, base, branches } : null;
+}
+
+function bigWon(n) {
+  if (n === null || n === undefined || isNaN(n)) return "—";
+  const a = Math.abs(n), sign = n < 0 ? "-" : "";
+  if (a >= 100000000) {
+    const eok = Math.floor(a / 100000000);
+    const man = Math.round((a % 100000000) / 10000);
+    return sign + eok + "억" + (man ? " " + nfmt(man) + "만" : "") + "원";
+  }
+  if (a >= 10000) return sign + nfmt(a / 10000) + "만원";
+  return sign + nfmt(a) + "원";
+}
+function deltaChip(cur, prev, opts) {
+  opts = opts || {};
+  const label = opts.label ? opts.label + " " : "";
+  if (prev === null || prev === undefined || !isFinite(prev) || prev === 0 || cur === null || cur === undefined) {
+    return '<span class="delta none">' + (opts.noData || "비교 자료 없음") + "</span>";
+  }
+  const d = cur / prev - 1;
+  if (Math.abs(d) < 0.005) return '<span class="delta flat">' + label + "변동 없음</span>";
+  const cls = d > 0 ? "up" : "down";
+  const arrow = d > 0 ? "▲" : "▼";
+  return '<span class="delta ' + cls + '">' + label + arrow + " " + pct(Math.abs(d)) + (opts.suffix || "") + "</span>";
+}
+function metricDelta(cur, prev) {
+  if (prev === null || prev === undefined || !prev) return null;
+  return cur / prev - 1;
+}
+function kpiCard(o) {
+  return '<div class="card kpi ' + (o.tone || "") + '">' +
+    '<div class="label">' + o.label + "</div>" +
+    '<div class="value num">' + o.value + (o.unit ? "<small>" + o.unit + "</small>" : "") + "</div>" +
+    '<div class="under">' + (o.delta || "") + (o.sub ? "<span>" + o.sub + "</span>" : "") + "</div>" +
+    (o.note ? '<div class="under" style="margin-top:8px">' + o.note + "</div>" : "") +
+    "</div>";
+}
+function sectionHead(title, hint) {
+  return '<div class="section-head"><h2>' + title + "</h2>" + (hint ? '<div class="hint">' + hint + "</div>" : "") + "</div>";
+}
+function emptyCard(title, body) {
+  return '<div class="card card-pad"><div style="font-size:1.1rem;font-weight:800;margin-bottom:8px">' + title + "</div><div class=\"muted\" style=\"line-height:1.7\">" + body + "</div></div>";
+}
+
+/* 월별 막대 그래프 (div 기반 · 큰 글씨) */
+function monthlyChart(bid, endMonth, count) {
+  const months = [];
+  for (let i = count - 1; i >= 0; i--) months.push(addMonths(endMonth, -i));
+  const vals = months.map(mk => {
+    const m = metricsOf(bid, mk);
+    return { mk, v: m ? m.rev : 0, has: !!m };
+  });
+  const max = Math.max(1, ...vals.map(x => x.v));
+  const cols = vals.map(x => {
+    const h = Math.max(3, Math.round(x.v / max * 100));
+    const isCur = x.mk === S.month;
+    return '<div class="mcol">' +
+      '<div class="mv num">' + (x.v ? wonShort(x.v) : "") + "</div>" +
+      '<div class="mbar-wrap"><div class="mbar' + (isCur ? " cur" : "") + (x.has ? "" : " empty") + '" style="height:' + h + '%"></div></div>' +
+      '<div class="mlab num">' + monthShort(x.mk) + "</div>" +
+      "</div>";
+  }).join("");
+  const partialNote = (endMonth === todayMonthKey())
+    ? '<div class="muted" style="margin-top:10px">이번 달은 ' + new Date().getDate() + "일까지 집계입니다. 막대는 총액 기준이라 진행 중인 달은 낮게 보입니다.</div>"
+    : "";
+  return '<div class="mchart">' + cols + "</div>" + partialNote;
+}
+
+/* 도넛 */
+function donut(parts, centerTop, centerSub) {
+  const total = parts.reduce((a, p) => a + p.v, 0) || 1;
+  const R = 54, C = 2 * Math.PI * R;
+  let acc = 0;
+  const arcs = parts.map(p => {
+    const len = p.v / total * C;
+    const seg = '<circle cx="70" cy="70" r="' + R + '" fill="none" stroke="' + p.c + '" stroke-width="20" ' +
+      'stroke-dasharray="' + len + ' ' + (C - len) + '" stroke-dashoffset="' + (-acc) + '" transform="rotate(-90 70 70)" stroke-linecap="butt"></circle>';
+    acc += len;
+    return seg;
+  }).join("");
+  return '<div style="display:flex;gap:26px;align-items:center;flex-wrap:wrap">' +
+    '<svg viewBox="0 0 140 140" style="width:170px;height:170px;flex:0 0 auto">' +
+    '<circle cx="70" cy="70" r="' + R + '" fill="none" stroke="#eef2f8" stroke-width="20"></circle>' + arcs +
+    '<text x="70" y="66" text-anchor="middle" font-size="19" font-weight="800" fill="#0d1726">' + centerTop + "</text>" +
+    '<text x="70" y="86" text-anchor="middle" font-size="10" fill="#5a6a80">' + centerSub + "</text>" +
+    "</svg>" +
+    '<div style="flex:1;min-width:180px">' + parts.map(p =>
+      '<div style="display:flex;justify-content:space-between;gap:14px;padding:7px 0;font-size:1rem">' +
+      '<span><i style="display:inline-block;width:13px;height:13px;border-radius:4px;background:' + p.c + ';margin-right:9px"></i>' + p.label + "</span>" +
+      '<b class="num">' + pct(p.v / total) + " · " + nfmt(p.v) + (p.unit || "명") + "</b></div>").join("") +
+    "</div></div>";
+}
+
+/* 진행 바 목록 */
+function barList(items, unit, formatter) {
+  const max = Math.max(1, ...items.map(i => i.v));
+  return '<div class="bars">' + items.map(i =>
+    '<div class="bar-row"><div class="nm">' + esc(i.label) + "</div>" +
+    '<div class="bar-track"><div class="bar-fill" style="width:' + Math.max(2, i.v / max * 100) + "%;" + (i.color ? "background:" + i.color : "") + '"></div></div>' +
+    '<div class="vl num">' + (formatter ? formatter(i.v) : nfmt(i.v) + (unit || "")) + "</div></div>").join("") + "</div>";
+}
+
+/* ---------- 대시보드 ---------- */
+function viewDash() {
+  const bid = curBranch();
+  const mk = S.month;
+  const m = metricsOf(bid, mk);
+  const prev = metricsOf(bid, addMonths(mk, -1));
+  const ly = metricsOf(bid, addMonths(mk, -12));
+  if (!m) {
+    return emptyCard("이 달 자료가 없습니다",
+      monthLabel(mk) + "에 해당하는 거래가 없습니다. 상단의 달을 옮기거나 <b>데이터 업로드</b> 탭에서 POS 상세조회 파일을 올려 주세요.<br><br>" +
+      '<button class="btn primary" data-goto="data">데이터 업로드로 이동</button>');
+  }
+  const diags = diagnosticsFor(bid, mk);
+  const yoy = bid === "hq" ? hqCompare(mk, 12) : (ly ? { cur: m.rev, base: priorComparableRev(bid, mk, 12), branches: 1 } : null);
+  const urgent = diags.filter(d => d.sev >= 2).slice(0, 3);
+  const chk = checklistProgress(bid, mk);
+
+  let h = "";
+  h += dataBanner();
+  h += '<div class="grid g-kpi">';
+  h += kpiCard({
+    label: "이번 달 실매출", value: bigWon(m.rev), tone: "accent",
+    delta: deltaChip(m.rev, prevComparableRev(bid, mk), {label: prevLabel(mk), noData:"비교 자료 없음"}) + (yoy ? deltaChip(yoy.cur, yoy.base, {label:"전년"}) : ""),
+    sub: (yoy ? "전년 동월 " + wonShort(yoy.base) + (bid === "hq" ? " · " + yoy.branches + "개 지점 동일 기준" : "") : "전년 비교 자료 없음")
+  });
+  h += kpiCard({
+    label: "일평균 실매출", value: bigWon(m.avgDaily),
+    delta: deltaChip(m.avgDaily, prev ? prev.avgDaily : null, {label:"전월"}),
+    sub: "영업일 " + m.activeDays + "일 기준"
+  });
+  h += kpiCard({
+    label: "객단가", value: won(Math.round(m.avgTicket)),
+    delta: deltaChip(m.avgTicket, prev ? prev.avgTicket : null, {label:"전월"}),
+    sub: "방문 " + nfmt(m.visits) + "건으로 나눈 값"
+  });
+  h += kpiCard({
+    label: "고유 고객", value: nfmt(m.uniqueCust) + "명",
+    delta: isPartialMonth(mk) ? '<span class="delta flat">진행 중</span>' : deltaChip(m.uniqueCust, prev ? prev.uniqueCust : null, {label:"전월"}),
+    sub: "담당자별 합 " + nfmt(m.dzSumCust) + "명 → 중복 " + nfmt(m.dupCust) + "명 제거"
+  });
+  h += kpiCard({
+    label: "신규 고객 비중", value: pct(m.newRateByCust),
+    delta: isPartialMonth(mk) ? '<span class="delta flat">진행 중</span>' : (prev ? '<span class="delta ' + (m.newRateByCust >= prev.newRateByCust ? "up" : "down") + '">' + pctPoint(m.newRateByCust - prev.newRateByCust) + "</span>" : ""),
+    sub: "신규 " + nfmt(m.newCust) + "명 / 방문 고객 " + nfmt(m.uniqueCust) + "명"
+  });
+  h += kpiCard({
+    label: "정액권 순증감", value: (m.preconNet >= 0 ? "+" : "") + bigWon(m.preconNet),
+    tone: m.preconNet < 0 ? "bad" : "good",
+    delta: '<span class="delta ' + (m.preconNet < 0 ? "down" : "up") + '">' + (m.preconNet < 0 ? "선수금 감소" : "선수금 증가") + "</span>",
+    sub: "판매 " + wonShort(m.preconSale) + " · 사용 " + wonShort(m.preconUse)
+  });
+  h += "</div>";
+
+  // 지점 비교 or 지점 요약
+  h += '<div class="section">';
+  if (bid === "hq") {
+    h += sectionHead("지점 비교", monthLabel(mk) + " · 지점을 누르면 그 지점으로 전환됩니다");
+    h += '<div class="card card-pad" style="margin-bottom:20px"><div style="font-weight:800;font-size:1.08rem;margin-bottom:4px">최근 12개월 실매출 · 본사 합계</div>' + monthlyChart("hq", mk, 12) + "</div>";
+    h += '<div class="table-wrap"><table class="data tight"><thead><tr>' +
+      "<th>지점</th><th>실매출</th><th>전월</th><th>전년</th><th>일평균</th><th>객단가</th><th>고유 고객</th><th>신규</th><th>정액권</th>" +
+      "</tr></thead><tbody>" +
+      BRANCHES.map(b => {
+        const bm = metricsOf(b.id, mk);
+        if (!bm) return "<tr><td>" + b.name + '</td><td colspan="8" class="muted" style="text-align:left">자료 없음</td></tr>';
+        const bp = metricsOf(b.id, addMonths(mk, -1));
+        const bl = metricsOf(b.id, addMonths(mk, -12));
+        return '<tr data-branch="' + b.id + '" style="cursor:pointer">' +
+          "<td>" + b.name + "</td>" +
+          '<td class="num"><b>' + won(bm.rev) + "</b></td>" +
+          "<td>" + deltaChip(bm.rev, prevComparableRev(b.id, mk)) + "</td>" +
+          "<td>" + deltaChip(bm.rev, bl ? priorComparableRev(b.id, mk, 12) : null) + "</td>" +
+          '<td class="num">' + won(Math.round(bm.avgDaily)) + "</td>" +
+          '<td class="num">' + won(Math.round(bm.avgTicket)) + "</td>" +
+          '<td class="num">' + nfmt(bm.uniqueCust) + "명</td>" +
+          '<td class="num">' + pct(bm.newRateByCust) + "</td>" +
+          '<td class="num ' + (bm.preconNet < 0 ? "neg" : "pos") + '">' + (bm.preconNet >= 0 ? "+" : "") + won(bm.preconNet) + "</td>" +
+          "</tr>";
+      }).join("") +
+      (() => {
+        const hm = metricsOf("hq", mk), hp = metricsOf("hq", addMonths(mk, -1)), yc = hqCompare(mk, 12);
+        return '<tr class="total"><td>합계</td><td class="num">' + won(hm.rev) + "</td><td>" + deltaChip(hm.rev, prevComparableRev("hq", mk)) + "</td><td>" + (yc ? deltaChip(yc.cur, yc.base) : deltaChip(0, 0)) + "</td><td class=\"num\">" + won(Math.round(hm.avgDaily)) + '</td><td class="num">' + won(Math.round(hm.avgTicket)) + '</td><td class="num">' + nfmt(hm.uniqueCust) + '명</td><td class="num">' + pct(hm.newRateByCust) + '</td><td class="num ' + (hm.preconNet < 0 ? "neg" : "pos") + '">' + (hm.preconNet >= 0 ? "+" : "") + won(hm.preconNet) + "</td></tr>";
+      })() +
+      "</tbody></table></div>" +
+      (isPartialMonth(mk) ? '<div class="pl-note" style="margin-top:14px">이번 달은 ' + new Date().getDate() + "일까지 집계입니다. <b>전월·전년</b>은 같은 기간(1~" + new Date().getDate() + "일)과 비교했습니다.</div>" : "");
+  } else {
+    h += sectionHead("이번 달 요약", "전월 대비 흐름과 담당자별 성과");
+    h += '<div class="grid g-2">';
+    h += '<div class="card card-pad"><div style="font-weight:800;font-size:1.1rem;margin-bottom:6px">최근 12개월 실매출</div>' + monthlyChart(bid, mk, 12) + "</div>";
+    const top = Object.entries(m.dz).map(([n, d]) => ({ label: n, v: d.rev })).sort((a, b) => b.v - a.v).slice(0, 6);
+    h += '<div class="card card-pad"><div style="font-weight:800;font-size:1.1rem;margin-bottom:16px">담당자별 시술 매출</div>' +
+      barList(top, "", v => wonShort(v)) + "</div>";
+    h += "</div>";
+  }
+  h += "</div>";
+
+  // 진단
+  h += '<div class="section">' + sectionHead("자동 진단", "지금 손봐야 할 것만 위에 올립니다", '<button class="btn ghost" data-goto="diag">전체 진단 보기</button>');
+  if (!urgent.length) {
+    h += '<div class="card card-pad good"><b>이번 달 급한 경고가 없습니다.</b><div class="muted" style="margin-top:6px">매출·신규·정액권·재방문 지표가 모두 정상 범위입니다.</div></div>';
+  } else {
+    h += '<div class="grid g-3">' + urgent.map(d => diagCard(d)).join("") + "</div>";
+  }
+  h += "</div>";
+
+  // 개선 과제 진행률
+  h += '<div class="section">' + sectionHead("개선 과제", chk.done + " / " + chk.total + " 완료", '<button class="btn ghost" data-goto="diag">과제 관리</button>');
+  h += '<div class="card card-pad"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px"><b style="font-size:1.05rem">' + branchName(bid) + " 이번 달 실행 항목</b><b class=\"num\" style=\"font-size:1.3rem\">" + Math.round(chk.rate * 100) + "%</b></div>" +
+    '<div class="bar-track" style="height:18px"><div class="bar-fill" style="width:' + Math.round(chk.rate * 100) + '%;background:linear-gradient(90deg,#34d399,#0a8f5b)"></div></div>' +
+    '<div class="muted" style="margin-top:14px;font-size:.95rem">미완료 항목: ' + (chk.pending.length ? chk.pending.slice(0, 3).map(x => esc(x)).join(" · ") : "없음") + "</div></div>";
+  h += "</div>";
+  return h;
+}
+
+function dataBanner() {
+  if (S.data.source === "sample") {
+    return '<div class="banner warn"><div><div class="bt">샘플 데이터로 보고 있습니다</div>' +
+      '<div class="bd">실제 매출이 아닙니다. 진단 기능을 보여주기 위해 일부 지점에 하락·정액권 소진 상황을 넣어 두었습니다. 핸드SOS 상세조회 파일을 올리면 그 자료로 바뀝니다.</div></div>' +
+      '<button class="btn" data-goto="data" style="margin-left:auto;white-space:nowrap">실제 자료 올리기</button></div>';
+  }
+  const files = S.data.files.length;
+  const from = S.stats && S.stats.from, to = S.stats && S.stats.to;
+  return '<div class="banner good"><div><div class="bt">실제 POS 자료 ' + files + "개 파일 · " + nfmt(S.stats ? S.stats.rowCount : 0) + "건</div>" +
+    '<div class="bd">' + (from ? from + " ~ " + to : "기간 없음") + " · 브라우저에만 저장되며 외부로 전송되지 않습니다.</div></div>" +
+    '<button class="btn" data-goto="data" style="margin-left:auto;white-space:nowrap">파일 관리</button></div>';
+}
+
+function diagCard(d, showBranch) {
+  const sevLabel = ["좋음", "참고", "주의", "심각"][d.sev];
+  return '<div class="diag sev-' + d.sev + '">' +
+    '<div class="top"><span class="badge">' + sevLabel + "</span>" +
+    (showBranch !== false && curBranch() === "hq" && d.branch ? '<span class="tagcell tag-re">' + branchName(d.branch) + "</span>" : "") +
+    '<span class="ttl">' + esc(d.title) + "</span></div>" +
+    '<div class="metric num">' + d.metric + "</div>" +
+    '<div class="why">' + d.why + "</div>" +
+    '<div class="act"><b>할 일</b> · ' + d.act + "</div></div>";
+}
+
+/* ---------- 매출 · 고객 ---------- */
+function viewSales() {
+  const bid = curBranch();
+  const mk = S.month;
+  const m = metricsOf(bid, mk);
+  const prev = metricsOf(bid, addMonths(mk, -1));
+  if (!m) return emptyCard("이 달 자료가 없습니다", monthLabel(mk) + " 거래가 없습니다. 다른 달을 선택하거나 자료를 올려 주세요.");
+  let h = '<div class="grid g-kpi">';
+  const partial = isPartialMonth(mk);
+  const pRev = priorComparable(bid, mk, 1, "rev");
+  const pSvc = priorComparable(bid, mk, 1, "service");
+  const pVis = priorComparable(bid, mk, 1, "visits");
+  const pTicket = (pSvc && pVis) ? pSvc / pVis : null;
+  const pLabel = partial ? "동일기간" : "전월";
+  h += kpiCard({ label: "실매출", value: bigWon(m.rev), tone: "accent", delta: deltaChip(m.rev, pRev, { label: pLabel }), sub: "현금 유입 기준" });
+  h += kpiCard({ label: "시술 매출", value: bigWon(m.service), delta: deltaChip(m.service, pSvc, { label: pLabel }), sub: "정액 사용분 포함·발생 기준" });
+  h += kpiCard({ label: "방문", value: nfmt(m.visits) + "건", delta: deltaChip(m.visits, pVis, { label: pLabel }), sub: "시술 줄 " + nfmt(m.visitRows) + "줄을 방문 단위로 묶음" });
+  h += kpiCard({ label: "고유 고객", value: nfmt(m.uniqueCust) + "명", delta: partial ? '<span class="delta flat">진행 중</span>' : deltaChip(m.uniqueCust, prev ? prev.uniqueCust : null, { label: pLabel }), sub: "이름+성별 기준 중복 제거" });
+  h += kpiCard({ label: "객단가", value: won(Math.round(m.avgTicket)), delta: deltaChip(m.avgTicket, pTicket, { label: pLabel }), sub: "시술 매출 ÷ 방문" });
+  h += kpiCard({ label: "재방문 비율", value: pct(m.reRateByVisit), delta: partial ? '<span class="delta flat">진행 중</span>' : (prev ? '<span class="delta ' + (m.reRateByVisit >= prev.reRateByVisit ? "up" : "down") + '">' + pctPoint(m.reRateByVisit - prev.reRateByVisit) + "</span>" : ""), sub: "방문 " + nfmt(m.reVisits) + "건 / 전체" });
+  h += "</div>";
+
+  // 12개월 표
+  h += '<div class="section">' + sectionHead("월별 지표", "최근 12개월 · 숫자를 누르면 그 달로 이동 · 표는 옆으로 넘겨 보세요", "");
+  const months = [];
+  for (let i = 11; i >= 0; i--) months.push(addMonths(mk, -i));
+  h += '<div class="table-wrap"><table class="data tight"><thead><tr>' +
+    "<th>월</th><th>실매출</th><th>전월비</th><th>시술 매출</th><th>정액 판매</th><th>정액 사용</th><th>선수금 증감</th><th>방문</th><th>고유 고객</th><th>객단가</th><th>신규 / 재방</th><th>재방문율</th><th>할인율</th>" +
+    '</tr></thead><tbody>' +
+    months.map((k, i) => {
+      const mm = metricsOf(bid, k);
+      if (!mm) return '<tr data-month="' + k + '" style="cursor:pointer"><td>' + monthLabel(k) + '</td><td colspan="12" class="muted" style="text-align:left">자료 없음</td></tr>';
+      const p = metricsOf(bid, addMonths(k, -1));
+      return '<tr data-month="' + k + '" style="cursor:pointer' + (k === mk ? ";background:#f4f8ff" : "") + '">' +
+        "<td>" + monthLabel(k) + "</td>" +
+        '<td class="num"><b>' + won(mm.rev) + "</b></td>" +
+        "<td>" + deltaChip(mm.rev, prevComparableRev(bid, k)) + "</td>" +
+        '<td class="num">' + won(mm.service) + "</td>" +
+        '<td class="num">' + won(mm.preconSale) + "</td>" +
+        '<td class="num">' + won(mm.preconUse) + "</td>" +
+        '<td class="num ' + (mm.preconNet < 0 ? "neg" : "pos") + '">' + (mm.preconNet > 0 ? "+" : "") + won(mm.preconNet) + "</td>" +
+        '<td class="num">' + nfmt(mm.visits) + "</td>" +
+        '<td class="num">' + nfmt(mm.uniqueCust) + "</td>" +
+        '<td class="num">' + won(Math.round(mm.avgTicket)) + "</td>" +
+        '<td class="num">' + nfmt(mm.newCust) + " / " + nfmt(mm.reVisits) + "</td>" +
+        '<td class="num">' + pct(mm.reRateByVisit) + "</td>" +
+        '<td class="num">' + pct(mm.discountRate) + "</td>" +
+        "</tr>";
+    }).join("") + "</tbody></table></div></div>";
+
+  // 구성
+  h += '<div class="section">' + sectionHead("고객 구성", monthLabel(mk));
+  h += '<div class="grid g-2e">';
+  h += '<div class="card card-pad"><div style="font-weight:800;font-size:1.1rem;margin-bottom:18px">신규 vs 재방문 (방문 기준)</div>' +
+    donut([
+      { label: "신규", v: m.newVisits, c: "#2563eb" },
+      { label: "재방문", v: m.reVisits, c: "#0a8f5b" },
+      { label: "대체·손님", v: m.etcVisits, c: "#c7d2e0" }
+    ], pct(m.newRateByVisit), "신규 비중") + "</div>";
+  const menuTop = Object.entries(m.menu).map(([n, v]) => ({ label: n, v: v.rev })).sort((a, b) => b.v - a.v).slice(0, 7);
+  h += '<div class="card card-pad"><div style="font-weight:800;font-size:1.1rem;margin-bottom:16px">메뉴별 매출</div>' + barList(menuTop, "", v => wonShort(v)) + "</div>";
+  h += "</div></div>";
+
+  // 중복 고객 방지
+  h += '<div class="section">' + sectionHead("중복 고객 방지", "담당자별 고객을 그냥 더하면 같은 고객이 여러 번 잡힙니다");
+  h += '<div class="grid g-2">';
+  h += '<div class="card card-pad">' +
+    '<div style="font-size:1.05rem;font-weight:800;margin-bottom:14px">' + monthLabel(mk) + " 고객 집계</div>" +
+    '<div class="pl-line"><div class="k">담당자별 고객 수 단순 합계</div><div class="v num">' + nfmt(m.dzSumCust) + "명</div></div>" +
+    '<div class="pl-line"><div class="k">실제 매장 고유 고객</div><div class="v num" style="color:var(--blue)">' + nfmt(m.uniqueCust) + "명</div></div>" +
+    '<div class="pl-line"><div class="k">중복으로 부풀려진 수</div><div class="v num" style="color:var(--red)">' + nfmt(m.dupCust) + "명 (" + pct(m.dzSumCust ? m.dupCust / m.dzSumCust : 0) + ")</div></div>" +
+    '<div class="pl-note">같은 고객이 한 달에 담당자를 바꾸거나 두 명에게 시술받으면 담당자별 합계에는 2명으로 잡힙니다. 이 앱은 <b>이름+성별</b>로 고객을 식별해 매장 고유 고객을 따로 셉니다. 담당자 성과 표에는 그 담당자를 찾은 고객 수(중복 포함)를, 매장 지표에는 고유 고객을 씁니다.</div>' +
+    "</div>";
+  if (bid === "hq") {
+    h += '<div class="card card-pad"><div style="font-size:1.05rem;font-weight:800;margin-bottom:14px">지점별 중복 현황</div>' +
+      '<div class="table-wrap" style="border:0"><table class="data compact"><thead><tr><th>지점</th><th>담당자별 합</th><th>고유 고객</th><th>중복</th><th>중복률</th></tr></thead><tbody>' +
+      BRANCHES.map(b => {
+        const bm = monthMetrics(S.stats, b.id, mk);
+        if (!bm) return "<tr><td>" + b.name + '</td><td colspan="4" class="muted" style="text-align:left">자료 없음</td></tr>';
+        return "<tr><td>" + b.name + '</td><td class="num">' + nfmt(bm.dzSumCust) + '명</td><td class="num">' + nfmt(bm.uniqueCust) + '명</td><td class="num">' + nfmt(bm.dupCust) + '명</td><td class="num">' + pct(bm.dzSumCust ? bm.dupCust / bm.dzSumCust : 0) + "</td></tr>";
+      }).join("") +
+      '<tr class="total"><td>합계</td><td class="num">' + nfmt(m.dzSumCust) + '명</td><td class="num">' + nfmt(m.uniqueCust) + '명</td><td class="num">' + nfmt(m.dupCust) + '명</td><td class="num">' + pct(m.dzSumCust ? m.dupCust / m.dzSumCust : 0) + "</td></tr>" +
+      "</tbody></table></div></div>";
+  } else {
+    const dzRows = Object.entries(m.dz).map(([n, d]) => ({ n, rev: d.rev, c: d.cust.size })).sort((a, b) => b.rev - a.rev);
+    h += '<div class="card card-pad"><div style="font-size:1.05rem;font-weight:800;margin-bottom:14px">담당자별 고객 수</div>' +
+      '<div class="table-wrap" style="border:0"><table class="data compact"><thead><tr><th>담당자</th><th>고객 수</th><th>시술 매출</th></tr></thead><tbody>' +
+      dzRows.map(r => "<tr><td>" + esc(r.n) + '</td><td class="num">' + r.c + '명</td><td class="num">' + wonShort(r.rev) + "</td></tr>").join("") +
+      '<tr class="total"><td>합계</td><td class="num">' + nfmt(m.dzSumCust) + '명</td><td class="num">' + wonShort(m.service) + "</td></tr>" +
+      "</tbody></table></div></div>";
+  }
+  h += "</div></div>";
+
+  // 유지율
+  if (bid !== "hq") {
+    const r = retention3(bid, mk);
+    h += '<div class="section">' + sectionHead("고객 유지율", "3개월 코호트 기준");
+    h += '<div class="card card-pad">' +
+      (r && r.cohort ? '<div style="display:flex;gap:40px;flex-wrap:wrap;align-items:flex-end">' +
+        '<div><div class="muted" style="font-weight:700">' + monthLabel(r.cohortMonth) + " 신규 고객</div><div class=\"num\" style=\"font-size:2.2rem;font-weight:800\">" + r.cohort + "명</div></div>" +
+        '<div><div class="muted" style="font-weight:700">이후 3개월 내 재방문</div><div class="num" style="font-size:2.2rem;font-weight:800;color:var(--green)">' + r.kept + "명</div></div>" +
+        '<div><div class="muted" style="font-weight:700">3개월 유지율</div><div class="num" style="font-size:2.2rem;font-weight:800;color:var(--blue)">' + pct(r.rate) + "</div></div>" +
+        "</div>" : '<div class="muted">3개월 전 신규 고객 코호트가 아직 없습니다. 자료가 3개월 이상 쌓이면 계산됩니다.</div>') +
+      '<div class="pl-note">계산: 3개월 전에 <b>처음</b> 방문한 고객 중, 그 뒤 2·1·0개월 안에 한 번이라도 다시 온 비율. 신규 유입이 좋아도 이 숫자가 낮으면 광고비만 나가는 구조입니다.</div>' +
+      "</div></div>";
+  }
+  return h;
+}
+/* ============================================================
+   5-B. 디자이너 · 정액권 · 손익 · 진단 · 데이터 · 설정
+   ============================================================ */
+function openDateOf(bid) {
+  const b = BRANCH_MAP[bid];
+  const ov = S.settings.branches && S.settings.branches[bid];
+  return (ov && ov.open) || (b ? b.open : "2000-01-01");
+}
+
+/* ---------- 디자이너 ---------- */
+function viewDesigner() {
+  const bid = curBranch();
+  const mk = S.month;
+  const m = metricsOf(bid, mk);
+  if (!m) return emptyCard("이 달 자료가 없습니다", monthLabel(mk) + " 거래가 없습니다.");
+  const prev = metricsOf(bid, addMonths(mk, -1));
+
+  if (bid === "hq") {
+    let h = '<div class="banner"><div><div class="bt">본사 보기에서는 지점을 골라야 담당자 표가 나옵니다</div>' +
+      '<div class="bd">지점별로 담당자 구성이 다릅니다. 아래에서 지점을 선택하세요.</div></div></div>';
+    h += '<div class="grid g-4">' + BRANCHES.map(b => {
+      const bm = metricsOf(b.id, mk);
+      return '<button class="card card-pad" data-branch="' + b.id + '" style="text-align:left;border:1px solid var(--line);cursor:pointer">' +
+        '<div style="font-weight:800;font-size:1.2rem">' + b.name + "</div>" +
+        '<div class="muted" style="margin-top:6px">담당자 ' + (bm ? Object.keys(bm.dz).length : 0) + "명</div>" +
+        '<div class="num" style="font-size:1.5rem;font-weight:800;margin-top:10px">' + (bm ? nfmt(bm.uniqueCust) + "명" : "—") + "</div>" +
+        '<div class="muted">고유 고객</div></button>';
+    }).join("") + "</div>";
+    const all = [];
+    BRANCHES.forEach(b => {
+      const bm = metricsOf(b.id, mk);
+      if (!bm) return;
+      Object.entries(bm.dz).forEach(([n, d]) => all.push({ b: b.name, n, rev: d.rev, c: d.cust.size, v: d.visits.size }));
+    });
+    all.sort((a, b) => b.rev - a.rev);
+    h += '<div class="section">' + sectionHead("전 지점 담당자 매출 상위", monthLabel(mk));
+    h += '<div class="card card-pad">' + barList(all.slice(0, 10).map(x => ({ label: x.b + " · " + x.n, v: x.rev })), "", v => wonShort(v)) + "</div></div>";
+    return h;
+  }
+
+  const rows = Object.entries(m.dz).map(([n, d]) => {
+    const p = prev && prev.dz[n];
+    return {
+      n, rev: d.rev, visits: d.visits.size, cust: d.cust.size, newC: d.newC.size,
+      avgTicket: d.visits.size ? d.rev / d.visits.size : 0,
+      prevRev: p ? p.rev : null,
+      prevDays: prev ? prev.activeDays : 0,
+      newRate: d.cust.size ? d.newC.size / d.cust.size : 0,
+      share: m.service ? d.rev / m.service : 0
+    };
+  }).sort((a, b) => b.rev - a.rev);
+
+  let h = '<div class="grid g-kpi">';
+  h += kpiCard({ label: "담당자 수", value: rows.length + "명", sub: "이번 달 시술 기록 기준" });
+  h += kpiCard({ label: "1인당 시술 매출", value: bigWon(m.service / Math.max(1, rows.length)), sub: "시술 매출 ÷ 담당자" });
+  h += kpiCard({
+    label: "최고 담당자 비중", value: pct(m.topDesigner ? m.topDesigner.rev / (m.service || 1) : 0),
+    tone: m.topDesigner && m.topDesigner.rev / (m.service || 1) >= 0.45 ? "bad" : "",
+    sub: m.topDesigner ? esc(m.topDesigner.name) : "—"
+  });
+  h += "</div>";
+
+  const curDays = m.activeDays || 1;
+  const partialNow = isPartialMonth(mk);
+  h += '<div class="section">' + sectionHead("담당자별 성과", "고객 수는 그 담당자를 찾은 고객(중복 없음) · 매장 고유 고객과 다릅니다");
+  h += '<div class="table-wrap"><table class="data"><thead><tr>' +
+    "<th>담당자</th><th>시술 매출</th><th>매출 비중</th><th>방문</th><th>고객 수</th><th>객단가</th><th>신규 고객</th><th>신규 비중</th><th>전월비</th><th>상태</th>" +
+    "</tr></thead><tbody>" +
+    rows.map(r => {
+      const ch = r.prevRev ? (partialNow ? (r.rev / curDays) / (r.prevRev / Math.max(1, r.prevDays)) - 1 : r.rev / r.prevRev - 1) : null;
+      const status = ch === null ? '<span class="tagcell tag-etc">신규/비교없음</span>' :
+        ch <= -0.3 ? '<span class="tagcell" style="background:var(--red-soft);color:var(--red)">급감</span>' :
+        ch >= 0.15 ? '<span class="tagcell" style="background:var(--green-soft);color:var(--green)">성장</span>' :
+        '<span class="tagcell tag-re">유지</span>';
+      return "<tr><td>" + esc(r.n) + "</td>" +
+        '<td class="num"><b>' + won(r.rev) + "</b></td>" +
+        '<td class="num">' + pct(r.share) + "</td>" +
+        '<td class="num">' + nfmt(r.visits) + "</td>" +
+        '<td class="num">' + nfmt(r.cust) + "</td>" +
+        '<td class="num">' + won(Math.round(r.avgTicket)) + "</td>" +
+        '<td class="num">' + nfmt(r.newC) + "</td>" +
+        '<td class="num">' + pct(r.newRate) + "</td>" +
+        "<td>" + (r.prevRev === null ? '<span class="delta none">—</span>' : deltaChip(r.rev, r.prevRev)) + "</td>" +
+        "<td>" + status + "</td></tr>";
+    }).join("") +
+    '<tr class="total"><td>합계</td><td class="num">' + won(m.service) + '</td><td class="num">100%</td><td class="num">' + nfmt(m.visits) + '</td><td class="num">' + nfmt(m.dzSumCust) + '명*</td><td class="num">' + won(Math.round(m.avgTicket)) + '</td><td class="num">' + nfmt(m.newCust) + '</td><td class="num">—</td><td>—</td><td></td></tr>' +
+    "</tbody></table></div>" +
+    (partialNow ? '<div class="pl-note" style="margin-bottom:0">이번 달은 ' + new Date().getDate() + "일까지라 전월비는 <b>일평균 기준</b>으로 비교했습니다.</div>" : "") +
+    '<div class="pl-note">* 합계 고객 수는 담당자별 고객을 그대로 더한 값입니다. 같은 고객이 두 담당자를 찾으면 두 번 잡히므로, 실제 매장 고유 고객은 <b>' + nfmt(m.uniqueCust) + "명</b>이고 중복은 <b>" + nfmt(m.dupCust) + "명</b>입니다.</div>" +
+    "</div>";
+
+  h += '<div class="section">' + sectionHead("매출 구성", "담당자별 시술 매출");
+  h += '<div class="card card-pad">' + barList(rows.map(r => ({ label: r.n, v: r.rev })), "", v => wonShort(v)) + "</div></div>";
+  return h;
+}
+
+/* ---------- 정액권 ---------- */
+function viewPrepaid() {
+  const bid = curBranch();
+  const mk = S.month;
+  const m = metricsOf(bid, mk);
+  if (!m) return emptyCard("이 달 자료가 없습니다", monthLabel(mk) + " 거래가 없습니다.");
+  const months = [];
+  for (let i = 11; i >= 0; i--) months.push(addMonths(mk, -i));
+
+  // 누적 잔액 (자료 시작부터)
+  let cum = 0;
+  const cumByMonth = {};
+  if (S.stats) {
+    S.stats.months.forEach(k => {
+      const mm = bid === "hq" ? hqMetrics(S.stats, k) : monthMetrics(S.stats, bid, k);
+      if (mm) { cum += mm.preconSale - mm.preconUse; cumByMonth[k] = cum; }
+    });
+  }
+  const balance = cumByMonth[mk] || 0;
+
+  let h = dataBanner();
+  h += '<div class="grid g-kpi">';
+  h += kpiCard({ label: "이번 달 판매(충전)", value: bigWon(m.preconSale), sub: "충전 " + nfmt(m.preconCount) + "건" });
+  h += kpiCard({ label: "이번 달 사용(소진)", value: bigWon(m.preconUse), sub: "정액 결제 " + nfmt(m.preconUseCount) + "건" });
+  h += kpiCard({
+    label: "선수금 순증감", value: (m.preconNet >= 0 ? "+" : "") + bigWon(m.preconNet),
+    tone: m.preconNet < 0 ? "bad" : "good",
+    sub: m.preconSale ? "사용/판매 " + (m.preconUse / m.preconSale).toFixed(2) + "배" : "판매 없음"
+  });
+  h += kpiCard({
+    label: "누적 선수금 잔액", value: bigWon(balance),
+    sub: "자료 시작 이후 누적 · 이전 이월분 미포함"
+  });
+  h += "</div>";
+
+  if (m.preconNet < 0) {
+    h += '<div class="banner warn" style="margin-top:22px"><div><div class="bt">선수금이 줄고 있습니다 (' + won(-m.preconNet) + ")</div>" +
+      '<div class="bd">판매보다 사용이 많습니다. 지금은 매출이 잡히지만, 쌓인 정액권이 바닥나면 그만큼 매출도 같이 사라집니다. 재충전 프로모션과 잔여 회차 안내를 먼저 하세요.</div></div></div>';
+  } else if (m.preconSale === 0) {
+    h += '<div class="banner warn" style="margin-top:22px"><div><div class="bt">이번 달 정액권 판매가 없습니다</div><div class="bd">사용은 ' + won(m.preconUse) + " 있었습니다. 판매 채널(카운터 안내·예약 화면)을 다시 켜세요.</div></div></div>";
+  }
+
+  h += '<div class="section">' + sectionHead("월별 정액권 흐름", "판매는 현금 유입이지만 아직 매출이 아니라 부채입니다");
+  h += '<div class="table-wrap"><table class="data"><thead><tr><th>월</th><th>판매</th><th>사용</th><th>순증감</th><th>사용/판매</th><th>누적 잔액</th><th>판매 건수</th></tr></thead><tbody>' +
+    months.map(k => {
+      const mm = bid === "hq" ? hqMetrics(S.stats, k) : monthMetrics(S.stats, bid, k);
+      if (!mm) return "<tr><td>" + monthLabel(k) + '</td><td colspan="6" class="muted" style="text-align:left">자료 없음</td></tr>';
+      const ratio = mm.preconSale ? mm.preconUse / mm.preconSale : null;
+      return "<tr><td>" + monthLabel(k) + "</td>" +
+        '<td class="num">' + won(mm.preconSale) + "</td>" +
+        '<td class="num">' + won(mm.preconUse) + "</td>" +
+        '<td class="num ' + (mm.preconNet < 0 ? "neg" : "pos") + '">' + (mm.preconNet > 0 ? "+" : "") + won(mm.preconNet) + "</td>" +
+        '<td class="num">' + (ratio === null ? "—" : ratio.toFixed(2) + "배") + "</td>" +
+        '<td class="num">' + won(cumByMonth[k] || 0) + "</td>" +
+        '<td class="num">' + nfmt(mm.preconCount) + "</td></tr>";
+    }).join("") + "</tbody></table></div></div>";
+
+  const prods = Object.entries(m.prepaidProducts || {}).map(([n, v]) => ({ label: n, v: v.count }));
+  h += '<div class="section">' + sectionHead("이번 달 충전 구성", "상품별 건수");
+  h += '<div class="grid g-2e"><div class="card card-pad">' +
+    (prods.length ? barList(prods, "건") : '<div class="muted">이번 달 충전 판매가 없습니다.</div>') +
+    '</div><div class="card card-pad"><div style="font-weight:800;font-size:1.05rem;margin-bottom:12px">정액권을 볼 때 지켜야 할 선</div>' +
+    '<div style="line-height:1.8;font-size:.98rem">① 판매액은 <b>매출이 아니라 선수금(부채)</b>입니다. ② 시술로 소진될 때 매출이 됩니다. ③ 판매가 사용보다 계속 적으면 <b>미래 매출을 당겨 쓰는 것</b>입니다. ④ 이 앱은 시술 매출을 발생 기준으로, 실매출을 현금 기준으로 따로 계산합니다.</div></div></div></div>';
+  return h;
+}
+
+/* ---------- 손익 ---------- */
+const PL_DEFAULTS = {
+  basis: "accrual", rent: 0, laborFixed: 0, laborVarPct: 0, materialPct: 0,
+  cardFeePct: 2.5, otherFixed: 0, royaltyPct: 0, sharePct: 0, interest: 0, taxPct: 9
+};
+function plInputs(bid) {
+  return Object.assign({}, PL_DEFAULTS, S.pl[bid] || {});
+}
+function plCalc(bid, mk) {
+  const m = bid === "hq" ? metricsOf("hq", mk) : metricsOf(bid, mk);
+  if (!m) return null;
+  if (bid === "hq") {
+    // 본사: 지점별 손익 합산 (입력이 있는 지점만)
+    const parts = BRANCHES.map(b => ({ b, pl: plCalc(b.id, mk) })).filter(x => x.pl);
+    const sum = k => parts.reduce((a, x) => a + (x.pl[k] || 0), 0);
+    const anyComplete = parts.some(x => x.pl.complete);
+    return {
+      hq: true, parts, complete: anyComplete,
+      revenue: sum("revenue"), cogs: sum("cogs"), gross: sum("gross"), sga: sum("sga"),
+      op: sum("op"), pretax: sum("pretax"), tax: sum("tax"), net: sum("net"),
+      royalty: sum("royalty"), share: sum("share"), hqTake: sum("hqTake"),
+      grossMargin: sum("revenue") ? sum("gross") / sum("revenue") : 0,
+      opMargin: sum("revenue") ? sum("op") / sum("revenue") : 0,
+      netMargin: sum("revenue") ? sum("net") / sum("revenue") : 0
+    };
+  }
+  const p = plInputs(bid);
+  const revenue = p.basis === "cash" ? m.rev : m.service;
+  const material = revenue * (p.materialPct || 0) / 100;
+  const cardFee = (m.cardPay || 0) * (p.cardFeePct || 0) / 100;
+  const cogs = material + cardFee;
+  const gross = revenue - cogs;
+  const labor = (p.laborFixed || 0) + revenue * (p.laborVarPct || 0) / 100;
+  const royalty = revenue * (p.royaltyPct || 0) / 100;
+  const sga = (p.rent || 0) + labor + (p.otherFixed || 0) + royalty;
+  const op = gross - sga;
+  const pretax = op - (p.interest || 0);
+  const tax = Math.max(0, pretax) * (p.taxPct || 0) / 100;
+  const net = pretax - tax;
+  const share = Math.max(0, net) * (p.sharePct || 0) / 100;
+  const hqTake = net - share + royalty;
+  const complete = ["rent", "laborFixed", "laborVarPct", "materialPct", "otherFixed", "royaltyPct"].some(k => (p[k] || 0) > 0);
+  return {
+    p, revenue, material, cardFee, cogs, gross, labor, royalty, sga, op, pretax, tax, net, share, hqTake,
+    grossMargin: revenue ? gross / revenue : 0,
+    opMargin: revenue ? op / revenue : 0,
+    netMargin: revenue ? net / revenue : 0,
+    complete, cardPay: m.cardPay
+  };
+}
+function plLine(k, v, opts) {
+  opts = opts || {};
+  return '<div class="pl-line ' + (opts.cls || "") + '"><div class="k">' + k +
+    (opts.note ? '<div class="n">' + opts.note + "</div>" : "") + "</div>" +
+    '<div class="v num" style="' + (opts.color ? "color:" + opts.color : "") + '">' +
+    (opts.minus && Math.round(v) !== 0 ? "-" : "") + won(Math.round(v)) + "</div></div>";
+}
+
+function viewPL() {
+  const bid = curBranch();
+  const mk = S.month;
+  const m = metricsOf(bid, mk);
+  if (!m) return emptyCard("이 달 자료가 없습니다", monthLabel(mk) + " 매출 자료가 있어야 손익을 계산할 수 있습니다.");
+
+  let h = "";
+  if (bid === "hq") {
+    const rowsAll = BRANCHES.map(b => ({ b, pl: plCalc(b.id, mk) }));
+    const done = rowsAll.filter(x => x.pl && x.pl.complete);
+    const sumOf = k => done.reduce((a, x) => a + (x.pl[k] || 0), 0);
+    const tRev = done.length ? sumOf("revenue") : 0;
+    h += sectionHead("지점별 손익 요약", monthLabel(mk) + " · 비용을 입력하지 않은 지점의 이익은 —로 표시됩니다");
+    if (window.innerWidth <= 640) {
+      h += '<div class="grid" style="grid-template-columns:1fr;gap:14px">' + rowsAll.map(({ b, pl }) => {
+        if (!pl) return '<div class="card card-pad muted">' + b.name + " · 자료 없음</div>";
+        return '<div class="card card-pad" data-branch="' + b.id + '">' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;gap:10px">' +
+          '<b style="font-size:1.15rem">' + b.name + "</b>" +
+          (pl.complete ? '<span class="tagcell tag-new">입력됨</span>' : '<span class="tagcell tag-etc">미입력</span>') + "</div>" +
+          '<div style="display:flex;justify-content:space-between;margin-top:14px"><span class="muted">매출</span><b class="num">' + won(pl.revenue) + "</b></div>" +
+          '<div style="display:flex;justify-content:space-between;margin-top:8px"><span class="muted">영업이익</span><b class="num" style="color:' + (pl.complete && pl.op >= 0 ? "var(--green)" : "var(--muted)") + '">' + (pl.complete ? won(pl.op) : "—") + "</b></div>" +
+          '<div style="display:flex;justify-content:space-between;margin-top:8px"><span class="muted">영업이익률</span><b class="num">' + (pl.complete ? pct(pl.opMargin) : "—") + "</b></div>" +
+          "</div>";
+      }).join("") + "</div>" +
+      '<div class="banner" style="margin-top:16px"><div><div class="bt">지점 카드를 누르면 손익을 입력할 수 있습니다</div><div class="bd">임대료·인건비·원가를 넣으면 자동 계산됩니다.</div></div></div>';
+      return h;
+    }
+    h += '<div class="table-wrap"><table class="data tight"><thead><tr>' +
+      "<th>지점</th><th>매출</th><th>매출총이익</th><th>영업이익</th><th>영업이익률</th><th>세전이익</th><th>순이익</th><th>본사 귀속</th><th>지점 배분</th><th>입력</th>" +
+      "</tr></thead><tbody>" +
+      rowsAll.map(({ b, pl }) => {
+        if (!pl) return "<tr><td>" + b.name + '</td><td colspan="9" class="muted" style="text-align:left">자료 없음</td></tr>';
+        const d = v => pl.complete ? won(v) : "—";
+        return '<tr data-branch="' + b.id + '" style="cursor:pointer"><td>' + b.name + "</td>" +
+          '<td class="num">' + won(pl.revenue) + "</td>" +
+          '<td class="num">' + d(pl.gross) + "</td>" +
+          '<td class="num"><b>' + d(pl.op) + "</b></td>" +
+          '<td class="num">' + (pl.complete ? pct(pl.opMargin) : "—") + "</td>" +
+          '<td class="num">' + d(pl.pretax) + "</td>" +
+          '<td class="num">' + d(pl.net) + "</td>" +
+          '<td class="num">' + d(pl.hqTake) + "</td>" +
+          '<td class="num">' + d(pl.share) + "</td>" +
+          "<td>" + (pl.complete ? '<span class="tagcell tag-new">입력됨</span>' : '<span class="tagcell tag-etc">미입력</span>') + "</td></tr>";
+      }).join("") +
+      '<tr class="total"><td>합계' + (done.length ? " (" + done.length + "개 지점)" : "") + "</td>" +
+      '<td class="num">' + won(tRev) + "</td>" +
+      '<td class="num">' + (done.length ? won(sumOf("gross")) : "—") + "</td>" +
+      '<td class="num">' + (done.length ? won(sumOf("op")) : "—") + "</td>" +
+      '<td class="num">' + (tRev ? pct(sumOf("op") / tRev) : "—") + "</td>" +
+      '<td class="num">' + (done.length ? won(sumOf("pretax")) : "—") + "</td>" +
+      '<td class="num">' + (done.length ? won(sumOf("net")) : "—") + "</td>" +
+      '<td class="num">' + (done.length ? won(sumOf("hqTake")) : "—") + "</td>" +
+      '<td class="num">' + (done.length ? won(sumOf("share")) : "—") + "</td><td></td></tr>" +
+      "</tbody></table></div>" +
+      (done.length < BRANCHES.filter(b => metricsOf(b.id, mk)).length ? '<div class="pl-note">합계는 비용을 입력한 <b>' + done.length + "개 지점</b> 기준입니다. 나머지 지점도 입력해야 전체 손익이 맞습니다.</div>" : "") +
+      '<div class="section"><div class="banner"><div><div class="bt">지점을 누르면 그 지점 손익을 입력할 수 있습니다</div><div class="bd">임대료·인건비·원가를 넣으면 매출총이익 → 영업이익 → 세전이익 → 순이익이 자동 계산됩니다.</div></div></div></div>';
+    return h;
+  }
+
+  const pl = plCalc(bid, mk);
+  const rows = BRANCHES.map(b => ({ id: b.id, name: b.name, open: openDateOf(b.id) }));
+  h += '<div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:22px">' +
+    rows.map(b => '<button class="btn ' + (b.id === bid ? "primary" : "ghost") + '" data-branch="' + b.id + '">' + b.name + "</button>").join("") + "</div>";
+
+  if (!pl.complete) {
+    h += '<div class="banner warn"><div><div class="bt">비용 항목이 비어 있습니다</div>' +
+      '<div class="bd">임대료·인건비·원가를 넣지 않으면 영업이익이 매출과 같게 보입니다. 실제 값이 있으면 직접 입력하고, 없으면 아래 <b>가정값 채우기</b>로 업계 평균 비율을 넣어 구조만 확인하세요.</div></div>' +
+      '<button class="btn" id="fillAssumptions" style="margin-left:auto;white-space:nowrap">가정값 채우기</button></div>';
+  }
+
+  h += '<div class="pl-grid">';
+  // 입력
+  h += '<div class="card card-pad"><div style="font-weight:800;font-size:1.15rem;margin-bottom:6px">' + branchName(bid) + " 비용 입력</div>" +
+    '<div class="muted" style="font-size:.92rem;margin-bottom:18px">입력하면 바로 저장됩니다. 빈 항목은 0으로 계산합니다.</div>' +
+    '<div class="field"><label>매출 기준<span>발생(시술) 또는 현금(실매출)</span></label>' +
+    '<select class="inp" data-pl="basis"><option value="accrual"' + (pl.p.basis === "accrual" ? " selected" : "") + '>발생</option><option value="cash"' + (pl.p.basis === "cash" ? " selected" : "") + ">현금</option></select></div>" +
+    '<div class="field"><label>임대료<span>월세 + 관리비</span></label><input data-pl="rent" type="text" inputmode="numeric" value="' + (pl.p.rent ? nfmt(pl.p.rent) : "") + '" placeholder="0"></div>' +
+    '<div class="field"><label>인건비 고정<span>급여·4대보험·식대</span></label><input data-pl="laborFixed" type="text" inputmode="numeric" value="' + (pl.p.laborFixed ? nfmt(pl.p.laborFixed) : "") + '" placeholder="0"></div>' +
+    '<div class="field"><label>인건비 변동<span>매출의 %</span></label><input data-pl="laborVarPct" type="number" min="0" step="0.5" value="' + (pl.p.laborVarPct || "") + '" placeholder="0"></div>' +
+    '<div class="field"><label>재료·소모품<span>매출의 %</span></label><input data-pl="materialPct" type="number" min="0" step="0.5" value="' + (pl.p.materialPct || "") + '" placeholder="0"></div>' +
+    '<div class="field"><label>카드 수수료율<span>카드+페이 결제액의 %</span></label><input data-pl="cardFeePct" type="number" min="0" step="0.1" value="' + (pl.p.cardFeePct || "") + '" placeholder="0"></div>' +
+    '<div class="field"><label>기타 고정비<span>수도·광열·광고·수리</span></label><input data-pl="otherFixed" type="text" inputmode="numeric" value="' + (pl.p.otherFixed ? nfmt(pl.p.otherFixed) : "") + '" placeholder="0"></div>' +
+    '<div class="field"><label>본사 로열티<span>매출의 %</span></label><input data-pl="royaltyPct" type="number" min="0" step="0.5" value="' + (pl.p.royaltyPct || "") + '" placeholder="0"></div>' +
+    '<div class="field"><label>지점 배분율<span>순이익의 %</span></label><input data-pl="sharePct" type="number" min="0" max="100" step="1" value="' + (pl.p.sharePct || "") + '" placeholder="0"></div>' +
+    '<div class="field"><label>이자비용<span>대출 이자</span></label><input data-pl="interest" type="text" inputmode="numeric" value="' + (pl.p.interest ? nfmt(pl.p.interest) : "") + '" placeholder="0"></div>' +
+    '<div class="field"><label>법인세율<span>과세표준 구간 세율</span></label><input data-pl="taxPct" type="number" min="0" max="30" step="0.5" value="' + (pl.p.taxPct || "") + '" placeholder="9"></div>' +
+    '<div class="pl-note">매출 기준: <b>발생</b>은 시술 매출(정액 사용 포함), <b>현금</b>은 실매출(정액권 판매 포함). 정액권 판매는 부채라서 발생 기준이 손익에 맞습니다.</div>' +
+    "</div>";
+
+  // 결과
+  h += '<div class="card card-pad"><div style="display:flex;justify-content:space-between;align-items:baseline;gap:12px;margin-bottom:6px">' +
+    '<div style="font-weight:800;font-size:1.15rem">' + monthLabel(mk) + " 손익</div>" +
+    '<div class="muted" style="font-size:.9rem">' + (pl.p.basis === "cash" ? "현금 기준" : "발생 기준") + " · " + branchName(bid) + "</div></div>" +
+    plLine("매출", pl.revenue, { cls: "sum", note: pl.p.basis === "cash" ? "실매출(현금 유입)" : "시술 매출(발생)" }) +
+    plLine("재료·소모품", pl.material, { minus: true, note: pct(pl.p.materialPct / 100) + " · 매출 대비" }) +
+    plLine("카드·페이 수수료", pl.cardFee, { minus: true, note: pct(pl.p.cardFeePct / 100) + " · 결제액 " + wonShort(pl.cardPay) + " 기준" }) +
+    plLine("매출총이익", pl.gross, { cls: "sum", note: "매출 − 매출원가 · 이익률 " + pct(pl.grossMargin) }) +
+    plLine("임대료", pl.p.rent || 0, { minus: true }) +
+    plLine("인건비", pl.labor, { minus: true, note: "고정 " + wonShort(pl.p.laborFixed || 0) + " + 변동 " + pct((pl.p.laborVarPct || 0) / 100) }) +
+    plLine("기타 고정비", pl.p.otherFixed || 0, { minus: true }) +
+    plLine("본사 로열티", pl.royalty, { minus: true, note: pct((pl.p.royaltyPct || 0) / 100) + " · 본사 수취" }) +
+    plLine("영업이익", pl.op, { cls: "sum big", note: "영업이익률 " + pct(pl.opMargin), color: pl.op >= 0 ? "var(--green)" : "var(--red)" }) +
+    plLine("이자비용", pl.p.interest || 0, { minus: true }) +
+    plLine("세전이익", pl.pretax, { cls: "sum", note: "영업이익 − 이자비용" }) +
+    plLine("법인세(추정)", pl.tax, { minus: true, note: "세전이익의 " + pct((pl.p.taxPct || 0) / 100) }) +
+    plLine("순이익", pl.net, { cls: "sum big", note: "순이익률 " + pct(pl.netMargin), color: pl.net >= 0 ? "var(--green)" : "var(--red)" }) +
+    '<div style="height:14px"></div>' +
+    plLine("지점 배분액", pl.share, { note: "순이익의 " + pct((pl.p.sharePct || 0) / 100) }) +
+    plLine("본사 귀속액", pl.hqTake, { note: "로열티 + 순이익 잔여" }) +
+    '<div class="pl-note">매출 · 매출총이익 · 영업이익 · 세전이익 · 순이익은 서로 다른 숫자입니다. 이익률을 말할 때 어느 단계인지 항상 함께 표시하세요. 법인세는 추정치이며 실제 세액은 결산·세무조정에 따라 달라집니다.</div>' +
+    "</div>";
+  h += "</div>";
+  return h;
+}
+
+/* ---------- 개선 과제 ---------- */
+const CHECK_BASE = [
+  { id: "ch-new", t: "신규 유입 채널 2개 집행", d: "네이버 플레이스 예약·리뷰 관리, 인스타 릴스 주 3회, 지역 직장인·아파트 제휴 중 2개를 이번 달 안에 실행하고 유입 경로를 예약 메모에 남기기." },
+  { id: "ch-re", t: "8주 미방문 고객 재방문 캠페인", d: "8주 이상 오지 않은 고객에게 담당자 이름으로 안부 문자. 발송 수와 응답 수를 기록해 다음 달에 비교." },
+  { id: "ch-ticket", t: "객단가 업셀 교육", d: "클리닉·컬러 업셀 스크립트 3문장을 정하고, 세트메뉴를 예약 화면 기본 노출로 변경." },
+  { id: "ch-prepaid", t: "정액권 재충전 안내", d: "잔여 5회 이하 고객에게 충전 안내 발송. 20회권 리뉴얼 혜택 1개 준비." },
+  { id: "ch-cost", t: "인건비·고정비 점검", d: "손익 탭에서 인건비/매출, 임대료/매출 비율 확인. 목표선을 넘으면 근무표와 고정비를 조정." },
+  { id: "ch-data", t: "월 마감 자료 업로드", d: "매월 1일, 전월 핸드SOS 상세조회 파일을 올려 지표를 확정." }
+];
+function checklistItems(bid, mk) {
+  const items = CHECK_BASE.slice();
+  if (bid !== "hq") {
+    diagnosticsFor(bid, mk).filter(d => d.sev >= 2).forEach(d => {
+      items.push({ id: "d-" + d.id, t: d.title + " 대응", d: d.act });
+    });
+  }
+  return items;
+}
+function checklistProgress(bid, mk) {
+  const items = checklistItems(bid, mk);
+  const store = (S.checklist[bid] && S.checklist[bid].items) || {};
+  let done = 0; const pending = [];
+  items.forEach(it => {
+    if (store[it.id] && store[it.id].done) done++;
+    else pending.push(it.t);
+  });
+  return { total: items.length, done, rate: items.length ? done / items.length : 0, pending };
+}
+function saveChecklist(bid) { saveState(); }
+
+function viewDiag() {
+  const bid = curBranch();
+  const mk = S.month;
+  const m = metricsOf(bid, mk);
+  if (!m) return emptyCard("이 달 자료가 없습니다", monthLabel(mk) + " 거래가 없습니다.");
+
+  const diags = diagnosticsFor(bid, mk);
+  const counts = [0, 0, 0, 0];
+  diags.forEach(d => counts[d.sev]++);
+
+  let h = '<div class="grid g-4">' +
+    kpiCard({ label: "심각", value: counts[3] + "건", tone: counts[3] ? "bad" : "" }) +
+    kpiCard({ label: "주의", value: counts[2] + "건", tone: counts[2] ? "" : "" }) +
+    kpiCard({ label: "참고", value: counts[1] + "건" }) +
+    kpiCard({ label: "좋은 신호", value: counts[0] + "건", tone: "good" }) +
+    "</div>";
+
+  h += '<div class="section">' + sectionHead(monthLabel(mk) + " 자동 진단", "규칙에 걸린 항목만 계산 근거와 함께 표시합니다");
+  if (!diags.length) h += '<div class="card card-pad muted">이번 달은 걸린 항목이 없습니다.</div>';
+  h += '<div class="grid g-2e">' + diags.map(d => diagCard(d)).join("") + "</div></div>";
+
+  // 체크리스트
+  const targetBid = bid === "hq" ? (window.__checkBranch || (BRANCHES.find(b => metricsOf(b.id, mk)) || BRANCHES[0]).id) : bid;
+  h += '<div class="section">' + sectionHead("지점별 개선 과제", "체크와 메모는 이 브라우저에 저장됩니다");
+  if (bid === "hq") {
+    h += '<div style="display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px">' +
+      BRANCHES.map(b => '<button class="btn ' + (b.id === targetBid ? "primary" : "ghost") + '" data-check-branch="' + b.id + '">' + b.name + "</button>").join("") + "</div>";
+  }
+  const items = checklistItems(targetBid, mk);
+  const store = (S.checklist[targetBid] && S.checklist[targetBid].items) || {};
+  const prog = checklistProgress(targetBid, mk);
+  h += '<div class="card card-pad">' +
+    '<div style="display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:8px">' +
+    "<div style='font-weight:800;font-size:1.1rem'>" + branchName(targetBid) + " · " + monthLabel(mk) + "</div>" +
+    '<div class="num" style="font-weight:800;font-size:1.25rem">' + prog.done + " / " + prog.total + "</div></div>" +
+    '<div class="bar-track" style="height:12px;margin-bottom:14px"><div class="bar-fill" style="width:' + Math.round(prog.rate * 100) + '%;background:linear-gradient(90deg,#34d399,#0a8f5b)"></div></div>' +
+    items.map(it => {
+      const st = store[it.id] || { done: false, note: "" };
+      return '<div class="chk-item ' + (st.done ? "done" : "") + '" data-chk="' + it.id + '">' +
+        '<input type="checkbox" ' + (st.done ? "checked" : "") + ' data-chk-toggle="' + it.id + '">' +
+        '<div><div class="t">' + esc(it.t) + '</div><div class="d">' + it.d + "</div>" +
+        '<textarea class="chk-memo" data-chk-note="' + it.id + '" placeholder="진행 메모 (예: 11/28 릴스 3편 업로드, 문자 82건 발송)">' + esc(st.note || "") + "</textarea></div>" +
+        '<div class="chk-pill">' + (st.done ? "완료" : "대기") + "</div></div>";
+    }).join("") +
+    "</div></div>";
+
+  // 규칙 설명
+  h += '<div class="section">' + sectionHead("진단 규칙", "숫자가 어떻게 경고로 바뀌는지");
+  h += '<div class="card card-pad"><table class="data compact" style="white-space:normal"><thead><tr><th style="width:220px">규칙</th><th style="width:260px">조건</th><th>계산 근거</th></tr></thead><tbody>' +
+    [
+      ["매출 급감", "전월 대비 -12% 이하 또는 전년 동월 대비 -18% 이하", "실매출(현금 유입) 비교. -22% 이하면 심각."],
+      ["신규 유입 하락", "신규 방문 건수 전월 대비 -20% 이하", "방문 단위로 묶은 신규 방문 수. 10건 미만 달은 제외."],
+      ["정액권 순소진", "사용 > 판매 × 1.02", "선수금 증감 = 판매 − 사용. 1.6배 초과면 심각."],
+      ["디자이너 공백", "전월 비중 8% 이상 담당자의 매출 -40% 이하", "퇴사·휴직으로 생긴 매출 공백을 잡습니다."],
+      ["객단가 하락", "전월 대비 -7% 이하", "시술 매출 ÷ 방문(묶음) 기준."],
+      ["매출 집중", "1인 담당자 매출 비중 45% 이상", "한 사람이 쉬면 매출이 그대로 빠지는 구조."],
+      ["재방문율 하락", "전월 대비 -5p 이하", "재방 방문 ÷ 전체 방문."],
+      ["오픈 초기 보정", "오픈 9개월 미만", "전년 비교 대신 일평균·신규 비중으로 봅니다. 설정에서 오픈일 수정 가능."]
+    ].map(r => "<tr><td><b>" + r[0] + "</b></td><td>" + r[1] + "</td><td>" + r[2] + "</td></tr>").join("") +
+    "</tbody></table></div></div>";
+  return h;
+}
+
+/* ---------- 데이터 ---------- */
+function viewData() {
+  const stats = S.stats;
+  let h = "";
+  h += '<div class="card card-pad" style="margin-bottom:22px">' +
+    '<div style="font-weight:800;font-size:1.2rem;margin-bottom:14px">자료 상태</div>' +
+    '<div class="kv">' +
+    '<div class="k">현재 자료</div><div class="v">' + (S.data.source === "sample" ? "샘플 데이터(연습용)" : "실제 POS 업로드 " + S.data.files.length + "개 파일") + "</div>" +
+    '<div class="k">기간</div><div class="v">' + (stats && stats.from ? stats.from + " ~ " + stats.to : "—") + "</div>" +
+    '<div class="k">거래 행</div><div class="v">' + nfmt(stats ? stats.rowCount : 0) + "건</div>" +
+    '<div class="k">마지막 갱신</div><div class="v">' + (S.data.updatedAt ? new Date(S.data.updatedAt).toLocaleString("ko-KR") : "—") + "</div>" +
+    '<div class="k">저장 위치</div><div class="v">이 브라우저(localStorage) · 외부 전송 없음</div>' +
+    "</div></div>";
+
+  h += '<div class="section">' + sectionHead("POS 상세조회 파일 올리기", "핸드SOS에서 내려받은 .xls / .xlsx / .csv 그대로");
+  h += '<div class="card card-pad">' +
+    '<div class="dropzone" id="dropzone">' +
+    '<div class="big">파일을 여기에 끌어다 놓거나</div>' +
+    '<div class="sm">날짜·고객명·담당·결제액이 있는 <b>매출상세조회</b> 파일을 올리세요. 파일 이름에 지점명이 있으면 자동으로 지점을 찾습니다.</div>' +
+    '<button class="btn primary" id="pickFile">파일 선택</button>' +
+    '<input type="file" id="fileInput" multiple accept=".xlsx,.xls,.csv,.txt" class="hidden">' +
+    "</div>" +
+    '<div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap;margin-top:20px">' +
+    '<label style="font-weight:700">지점 자동 인식이 안 될 때</label>' +
+    '<select id="uploadBranch" class="inp" style="max-width:240px">' +
+    '<option value="">지점 선택 안 함</option>' +
+    BRANCHES.map(b => '<option value="' + b.id + '">' + b.name + "</option>").join("") +
+    "</select>" +
+    '<button class="btn ghost" id="downloadTemplate">샘플 양식 CSV 받기</button>' +
+    "</div>" +
+    '<div class="pl-note">같은 파일을 다시 올리면 중복으로 쌓입니다. 잘못 올렸으면 아래 목록에서 지우세요. 업로드 자료는 이 브라우저에만 저장됩니다.</div>' +
+    "</div></div>";
+
+  if (S.data.files.length) {
+    h += '<div class="section">' + sectionHead("업로드된 파일", S.data.files.length + "개");
+    h += '<div class="card card-pad">' + S.data.files.map(f =>
+      '<div class="file-row"><div><b>' + esc(f.name) + "</b><div class=\"muted\" style=\"font-size:.9rem\">" +
+      branchName(f.branch) + " · " + f.from + " ~ " + f.to + " · " + nfmt(f.count) + "행" + (f.skipped ? " (0원·인식불가 " + f.skipped + "행 제외)" : "") + " · 실매출 " + wonShort(f.rev) +
+      "</div></div><button class='btn danger' data-del-file='" + f.id + "'>삭제</button></div>").join("") + "</div></div>";
+  }
+
+  h += '<div class="section">' + sectionHead("데이터 관리", "백업과 초기화");
+  h += '<div class="grid g-3">' +
+    '<div class="card card-pad"><div style="font-weight:800;margin-bottom:8px">백업 내보내기</div><div class="muted" style="margin-bottom:14px">손익 입력·체크리스트·업로드 목록을 JSON으로 저장합니다.</div><button class="btn" id="exportBackup">JSON 내보내기</button></div>' +
+    '<div class="card card-pad"><div style="font-weight:800;margin-bottom:8px">백업 가져오기</div><div class="muted" style="margin-bottom:14px">다른 브라우저나 PC로 옮길 때 사용합니다.</div><button class="btn" id="importBackup">JSON 가져오기</button><input type="file" id="backupInput" accept=".json" class="hidden"></div>' +
+    '<div class="card card-pad"><div style="font-weight:800;margin-bottom:8px">샘플로 되돌리기</div><div class="muted" style="margin-bottom:14px">업로드 자료를 지우고 연습용 샘플로 봅니다.</div><button class="btn" id="reloadSample">샘플 데이터</button></div>' +
+    "</div></div>";
+
+  h += '<div class="section">' + sectionHead("Google Sheets / Apps Script 연결 (선택)", "지금은 브라우저 안에서만 계산합니다 · 서버비 0원 원칙");
+  h += '<div class="card card-pad"><div class="muted" style="line-height:1.8;margin-bottom:16px">' +
+    "핸드SOS API가 열리거나, 구글시트에 POS 자료를 쌓고 Apps Script로 JSON을 내보내면 이 칸에 웹앱 URL을 넣어 자동으로 받아올 수 있습니다. " +
+    "Apps Script는 <b>배포 → 웹앱 → 액세스: 모든 사용자</b>로 배포해야 브라우저에서 읽힙니다." +
+    "</div>" +
+    '<div style="display:flex;gap:12px;flex-wrap:wrap"><input class="inp" id="apiUrl" style="flex:1;min-width:280px" placeholder="https://script.google.com/macros/s/.../exec" value="' + esc(S.settings.apiUrl || "") + '">' +
+    '<button class="btn primary" id="saveApi">저장</button><button class="btn" id="testApi">연결 테스트</button></div>' +
+    '<div id="apiResult" style="margin-top:12px" class="muted"></div></div></div>';
+  return h;
+}
+
+/* ---------- 설정 ---------- */
+function viewSettings() {
+  let h = '<div class="grid g-2e">';
+  h += '<div class="card card-pad"><div style="font-weight:800;font-size:1.15rem;margin-bottom:6px">지점 정보</div>' +
+    '<div class="muted" style="margin-bottom:16px;font-size:.95rem">오픈일은 진단의 오픈 초기 보정에 쓰입니다.</div>' +
+    BRANCHES.map(b => '<div class="field"><label>' + b.name + '</label><input type="date" data-open="' + b.id + '" value="' + openDateOf(b.id) + '"></div>').join("") +
+    "</div>";
+  h += '<div class="card card-pad"><div style="font-weight:800;font-size:1.15rem;margin-bottom:6px">지점 잠금 (PIN)</div>' +
+    '<div class="muted" style="margin-bottom:16px;font-size:.95rem">같은 기기를 쓰는 사람이 다른 지점 자료를 열지 못하게 막습니다. 기기 자체를 보는 사람에게는 열람이 가능한 화면 잠금입니다.</div>' +
+    ["hq"].concat(BRANCHES.map(b => b.id)).map(id => {
+      const has = !!(S.settings.pins && S.settings.pins[id]);
+      return '<div class="field"><label>' + (id === "hq" ? "본사 전체" : branchName(id)) + "<span>" + (has ? "PIN 설정됨" : "잠금 없음") + "</span></label>" +
+        '<button class="btn ' + (has ? "danger" : "") + '" data-pin="' + id + '">' + (has ? "해제" : "설정") + "</button></div>";
+    }).join("") +
+    "</div>";
+  h += "</div>";
+
+  h += '<div class="section">' + sectionHead("계산 기준", "숫자가 서로 맞지 않을 때 여기부터 확인하세요");
+  h += '<div class="card card-pad"><div style="line-height:1.9;font-size:1rem">' +
+    "<b>실매출</b> = 시술 결제(현금·카드·통장·페이·기타·외상) + 정액권 판매 충전액. 현금이 실제로 들어온 금액입니다.<br>" +
+    "<b>시술 매출</b> = 시술 결제액 합계(정액권으로 결제한 부분 포함). 발생 기준 매출입니다.<br>" +
+    "<b>정액권 사용</b> = 시술 결제액 − 현금성 결제액. 핸드SOS 상세조회에는 정액 사용 열이 없어 이 차이로 계산합니다.<br>" +
+    "<b>방문</b> = 같은 날짜·시간·고객의 여러 시술 줄을 1건으로 묶은 수. 핸드SOS 요약의 '건수'는 줄 수 기준이라 객단가가 더 낮게 나옵니다.<br>" +
+    "<b>고유 고객</b> = 이름+성별로 중복을 제거한 수. 담당자별 고객 수를 그대로 더하면 같은 고객이 여러 번 잡힙니다.<br>" +
+    "<b>재방문율</b> = 재방 방문 ÷ 전체 방문. <b>3개월 유지율</b> = 3개월 전 신규 고객 중 이후 3개월 내 재방문 비율.<br>" +
+    "<b>손익</b> = 매출 → 매출총이익 → 영업이익 → 세전이익 → 순이익. 로열티는 판관비에 포함, 지점 배분은 순이익 배분입니다." +
+    "</div></div></div>";
+
+  h += '<div class="section">' + sectionHead("앱 정보", "");
+  h += '<div class="card card-pad"><div class="kv">' +
+    '<div class="k">버전</div><div class="v">ATLANC POS OS v' + APP_VERSION + "</div>" +
+    '<div class="k">동작 방식</div><div class="v">단일 HTML · GitHub Pages 배포 가능 · 서버비 0원</div>' +
+    '<div class="k">엑셀 파싱</div><div class="v">' + (window.XLSX ? "SheetJS 로드됨" : "SheetJS 미로드 (HTML/CSV 파서로 동작)") + "</div>" +
+    '<div class="k">자료 보관</div><div class="v">이 브라우저에만 저장 · 서버 전송 없음</div>' +
+    '<div class="k">초기화</div><div class="v"><button class="btn danger" id="resetAll">모든 데이터 초기화</button></div>' +
+    "</div></div></div>";
+  return h;
+}
+/* ============================================================
+   6. 부트 · 로그인 · 라우팅 · 이벤트
+   ============================================================ */
+function buildStats() {
+  let rows;
+  if (S.data.source === "sample") {
+    if (!window.__sampleRows) window.__sampleRows = generateSampleData();
+    rows = window.__sampleRows;
+  } else {
+    rows = [];
+    S.data.files.forEach(f => { rows = rows.concat(f.rows || []); });
+  }
+  S.stats = aggregate(rows);
+}
+
+/* ---------- 로그인 ---------- */
+function renderLogin() {
+  const grid = document.getElementById("branchGrid");
+  const cards = [{
+    id: "hq", role: "본사 · 전체 통합", name: "본사 전체", meta: "4개 지점 통합 · 비교 · 배분", hq: true
+  }].concat(BRANCHES.map(b => ({
+    id: b.id, role: "지점", name: b.name,
+    meta: "오픈 " + openDateOf(b.id).slice(0, 7) + " · " + (S.settings.pins && S.settings.pins[b.id] ? "PIN 잠금" : "잠금 없음"),
+    locked: !!(S.settings.pins && S.settings.pins[b.id])
+  })));
+  grid.innerHTML = cards.map(c =>
+    '<button class="branch-card ' + (c.hq ? "hq" : "") + (c.locked ? " locked" : "") + '" data-login="' + c.id + '">' +
+    '<div class="role">' + c.role + "</div>" +
+    '<div class="name">' + c.name + "</div>" +
+    '<div class="meta">' + c.meta + "</div></button>").join("");
+  grid.querySelectorAll("[data-login]").forEach(el => {
+    el.onclick = () => tryLogin(el.getAttribute("data-login"));
+  });
+  document.getElementById("loginMeta").textContent =
+    (S.data.source === "sample" ? "샘플 데이터 준비됨" : "업로드 자료 " + S.data.files.length + "개 파일") +
+    " · 이 브라우저에만 저장";
+}
+
+function tryLogin(bid) {
+  const pin = S.settings.pins && S.settings.pins[bid];
+  if (!pin) return enterApp(bid);
+  openModal(
+    "<h3>" + branchName(bid) + " 잠금</h3><p>PIN 4~6자리를 입력하세요.</p>" +
+    '<input id="pinInput" type="password" inputmode="numeric" maxlength="8" placeholder="••••">' +
+    '<div class="row"><button class="btn ghost wide" data-x="cancel">취소</button><button class="btn primary wide" data-x="ok">열기</button></div>',
+    host => {
+      const input = host.querySelector("#pinInput");
+      const submit = () => {
+        if (hashPin(input.value) === pin) { closeModal(); enterApp(bid); }
+        else { input.value = ""; input.placeholder = "PIN이 맞지 않습니다"; input.focus(); }
+      };
+      host.querySelector('[data-x="cancel"]').onclick = closeModal;
+      host.querySelector('[data-x="ok"]').onclick = submit;
+      input.onkeydown = e => { if (e.key === "Enter") submit(); };
+    }
+  );
+}
+
+function hashPin(v) {
+  let h = 5381;
+  const s = String(v || "");
+  for (let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0;
+  return "h" + (h >>> 0).toString(36);
+}
+
+function enterApp(bid) {
+  S.role = bid;
+  S.sessionRole = bid;
+  S.view = S.view || "dash";
+  document.getElementById("login").classList.add("hidden");
+  document.getElementById("app").classList.remove("hidden");
+  if (!S.stats) {
+    document.getElementById("view").innerHTML = '<div class="card card-pad"><div style="font-size:1.2rem;font-weight:800">자료를 계산하고 있습니다…</div><div class="muted" style="margin-top:8px">거래를 지점·월·담당자별로 묶는 중입니다.</div></div>';
+    setTimeout(() => { buildStats(); render(); }, 60);
+  }
+
+  // 지점 선택기
+  const sel = document.getElementById("branchSelect");
+  if (bid === "hq") {
+    sel.innerHTML = '<option value="hq">본사 전체</option>' +
+      BRANCHES.map(b => '<option value="' + b.id + '">' + b.name + "</option>").join("");
+    sel.value = "hq";
+    sel.disabled = false;
+  } else {
+    sel.innerHTML = '<option value="' + bid + '">' + branchName(bid) + "</option>";
+    sel.value = bid;
+    sel.disabled = true;
+  }
+  document.getElementById("sideBranchName").textContent = branchName(bid);
+  document.getElementById("sideWho").textContent = roleLabel();
+  render();
+  saveState();
+}
+
+function logout() {
+  S.role = null;
+  document.getElementById("app").classList.add("hidden");
+  document.getElementById("login").classList.remove("hidden");
+  renderLogin();
+  saveState();
+}
+
+/* ---------- 라우팅 ---------- */
+const VIEWS = {
+  dash: { title: "경영 대시보드", crumb: "DASHBOARD", fn: viewDash },
+  sales: { title: "매출 · 고객", crumb: "SALES & CUSTOMERS", fn: viewSales },
+  designer: { title: "디자이너 성과", crumb: "DESIGNERS", fn: viewDesigner },
+  prepaid: { title: "정액권", crumb: "PREPAID", fn: viewPrepaid },
+  pl: { title: "손익 · 정산", crumb: "P&L", fn: viewPL },
+  diag: { title: "진단 · 개선", crumb: "DIAGNOSTICS", fn: viewDiag },
+  data: { title: "데이터 업로드", crumb: "DATA", fn: viewData },
+  settings: { title: "설정", crumb: "SETTINGS", fn: viewSettings }
+};
+
+function render() {
+  if (!S.role) return;
+  if (!S.stats) buildStats();
+  const v = VIEWS[S.view] || VIEWS.dash;
+  document.getElementById("crumb").textContent = "ATLANC / " + v.crumb;
+  document.getElementById("pageTitle").textContent = v.title;
+  document.getElementById("pageSub").textContent = branchName(curBranch()) + " · " + monthLabel(S.month) +
+    (S.data.source === "sample" ? " · 샘플" : "");
+  document.getElementById("monthLabel").textContent = monthLabel(S.month);
+  const pill = document.getElementById("dataPill");
+  if (S.data.source === "sample") { pill.className = "pill sample"; pill.textContent = "샘플 데이터"; }
+  else { pill.className = "pill live"; pill.textContent = "실제 자료 " + S.data.files.length + "개"; }
+
+  document.querySelectorAll(".nav-item").forEach(b => {
+    b.classList.toggle("active", b.getAttribute("data-view") === S.view);
+  });
+  const host = document.getElementById("view");
+  host.innerHTML = v.fn();
+  bindView(host);
+  const st = document.getElementById("sideStore");
+  if (st) st.textContent = (S.stats ? nfmt(S.stats.rowCount) + "건 · " : "") + "브라우저 저장 · 서버 없음";
+  window.scrollTo({ top: 0, behavior: "auto" });
+}
+
+/* ---------- 뷰 이벤트 ---------- */
+function bindView(host) {
+  host.querySelectorAll("[data-goto]").forEach(el => el.onclick = () => { S.view = el.getAttribute("data-goto"); saveState(); render(); });
+  host.querySelectorAll("[data-branch]").forEach(el => el.onclick = () => {
+    if (S.sessionRole !== "hq") return;
+    S.role = el.getAttribute("data-branch");
+    const sel = document.getElementById("branchSelect");
+    if (sel) sel.value = S.role;
+    document.getElementById("sideBranchName").textContent = branchName(S.role);
+    document.getElementById("sideWho").textContent = roleLabel();
+    saveState(); render();
+  });
+  host.querySelectorAll("[data-month]").forEach(el => el.onclick = () => { S.month = el.getAttribute("data-month"); saveState(); render(); });
+  host.querySelectorAll("[data-check-branch]").forEach(el => el.onclick = () => {
+    window.__checkBranch = el.getAttribute("data-check-branch");
+    render();
+  });
+
+  // 손익 입력
+  host.querySelectorAll("[data-pl]").forEach(el => {
+    el.onchange = () => {
+      const bid = curBranch();
+      if (bid === "hq") return;
+      const key = el.getAttribute("data-pl");
+      S.pl[bid] = S.pl[bid] || {};
+      if (key === "basis") S.pl[bid].basis = el.value;
+      else S.pl[bid][key] = Math.max(0, Number(String(el.value).replace(/[^0-9.]/g, "")) || 0);
+      saveState();
+      render();
+      const again = document.querySelector('[data-pl="' + key + '"]');
+      if (again) again.focus();
+    };
+  });
+  const fill = host.querySelector("#fillAssumptions");
+  if (fill) fill.onclick = () => {
+    const bid = curBranch();
+    const m = metricsOf(bid, S.month);
+    if (!m) return;
+    const base = S.pl[bid] || {};
+    S.pl[bid] = Object.assign({}, base, {
+      rent: Math.round(m.rev * 0.09 / 10000) * 10000,
+      laborFixed: Math.round(m.rev * 0.27 / 10000) * 10000,
+      laborVarPct: 3,
+      materialPct: 8,
+      cardFeePct: base.cardFeePct || 2.5,
+      otherFixed: Math.round(m.rev * 0.055 / 10000) * 10000,
+      royaltyPct: 5, sharePct: 20, interest: 0, taxPct: 9
+    });
+    saveState(); render();
+    toast("가정값을 채웠습니다. 실제 값으로 바꿔 주세요.");
+  };
+
+  // 체크리스트
+  host.querySelectorAll("[data-chk-toggle]").forEach(el => {
+    el.onchange = () => {
+      const bid = S.role === "hq" ? (window.__checkBranch || BRANCHES[0].id) : S.role;
+      S.checklist[bid] = S.checklist[bid] || { items: {} };
+      const id = el.getAttribute("data-chk-toggle");
+      S.checklist[bid].items[id] = S.checklist[bid].items[id] || { done: false, note: "" };
+      S.checklist[bid].items[id].done = el.checked;
+      S.checklist[bid].updatedAt = Date.now();
+      saveState(); render();
+    };
+  });
+  let noteTimer = null;
+  host.querySelectorAll("[data-chk-note]").forEach(el => {
+    el.oninput = () => {
+      clearTimeout(noteTimer);
+      noteTimer = setTimeout(() => {
+        const bid = S.role === "hq" ? (window.__checkBranch || BRANCHES[0].id) : S.role;
+        S.checklist[bid] = S.checklist[bid] || { items: {} };
+        const id = el.getAttribute("data-chk-note");
+        S.checklist[bid].items[id] = S.checklist[bid].items[id] || { done: false, note: "" };
+        S.checklist[bid].items[id].note = el.value;
+        saveState();
+      }, 400);
+    };
+  });
+
+  // 데이터 탭
+  const dz = host.querySelector("#dropzone");
+  const input = host.querySelector("#fileInput");
+  const pick = host.querySelector("#pickFile");
+  if (pick && input) pick.onclick = () => input.click();
+  if (input) input.onchange = () => { if (input.files.length) handleFiles(Array.from(input.files)); };
+  if (dz && input) {
+    dz.ondragover = e => { e.preventDefault(); dz.classList.add("over"); };
+    dz.ondragleave = () => dz.classList.remove("over");
+    dz.ondrop = e => {
+      e.preventDefault(); dz.classList.remove("over");
+      const files = Array.from(e.dataTransfer.files || []);
+      if (files.length) handleFiles(files);
+    };
+  }
+  const tmpl = host.querySelector("#downloadTemplate");
+  if (tmpl) tmpl.onclick = () => {
+    const blob = new Blob([buildTemplateCSV()], { type: "text/csv;charset=utf-8" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = "ATLANC_핸드SOS_매출상세_양식.csv";
+    a.click();
+    setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+    toast("샘플 양식 CSV를 내려받았습니다.");
+  };
+  host.querySelectorAll("[data-del-file]").forEach(el => {
+    el.onclick = () => {
+      const id = el.getAttribute("data-del-file");
+      confirmModal("파일 삭제", "이 파일의 거래 자료가 대시보드에서 빠집니다. 되돌릴 수 없습니다.", "삭제", () => {
+        S.data.files = S.data.files.filter(f => f.id !== id);
+        if (!S.data.files.length) S.data.source = "sample";
+        S.data.updatedAt = Date.now();
+        buildStats(); saveState(); render();
+      }, true);
+    };
+  });
+  const reload = host.querySelector("#reloadSample");
+  if (reload) reload.onclick = () => confirmModal("샘플로 되돌리기", "업로드한 자료가 모두 지워집니다.", "되돌리기", () => {
+    S.data = { source: "sample", files: [], updatedAt: Date.now() };
+    buildStats(); saveState(); render();
+  }, true);
+  const exp = host.querySelector("#exportBackup");
+  if (exp) exp.onclick = exportBackup;
+  const imp = host.querySelector("#importBackup");
+  const binput = host.querySelector("#backupInput");
+  if (imp && binput) {
+    imp.onclick = () => binput.click();
+    binput.onchange = () => { if (binput.files[0]) importBackup(binput.files[0]); };
+  }
+  const saveApi = host.querySelector("#saveApi");
+  if (saveApi) saveApi.onclick = () => {
+    S.settings.apiUrl = host.querySelector("#apiUrl").value.trim();
+    saveState(); toast("저장했습니다.");
+  };
+  const testApi = host.querySelector("#testApi");
+  if (testApi) testApi.onclick = async () => {
+    const url = host.querySelector("#apiUrl").value.trim();
+    const res = host.querySelector("#apiResult");
+    if (!url) { res.textContent = "URL을 먼저 입력하세요."; return; }
+    res.textContent = "확인 중…";
+    try {
+      const r = await fetch(url, { method: "GET", redirect: "follow" });
+      const text = await r.text();
+      let parsed = null;
+      try { parsed = JSON.parse(text); } catch (e) { }
+      res.innerHTML = 'HTTP ' + r.status + (parsed ? ' · JSON 응답 확인(' + (Array.isArray(parsed) ? parsed.length + "행" : Object.keys(parsed).slice(0, 5).join(", ")) + ")" : " · JSON이 아닌 응답입니다(Apps Script 배포 권한 확인)");
+    } catch (e) {
+      res.textContent = "연결 실패: " + e.message + " · Apps Script는 '모든 사용자' 액세스로 배포해야 합니다.";
+    }
+  };
+
+  // 설정
+  host.querySelectorAll("[data-open]").forEach(el => {
+    el.onchange = () => {
+      S.settings.branches = S.settings.branches || {};
+      const id = el.getAttribute("data-open");
+      S.settings.branches[id] = S.settings.branches[id] || {};
+      S.settings.branches[id].open = el.value;
+      saveState(); toast(branchName(id) + " 오픈일 저장");
+    };
+  });
+  host.querySelectorAll("[data-pin]").forEach(el => {
+    el.onclick = () => {
+      const id = el.getAttribute("data-pin");
+      if (S.settings.pins && S.settings.pins[id]) {
+        confirmModal("잠금 해제", branchName(id) + "의 PIN을 지웁니다.", "해제", () => {
+          delete S.settings.pins[id]; saveState(); render();
+        }, true);
+      } else {
+        setPin(id);
+      }
+    };
+  });
+  const reset = host.querySelector("#resetAll");
+  if (reset) reset.onclick = () => confirmModal("모든 데이터 초기화", "업로드 자료·손익 입력·체크리스트·PIN이 모두 지워집니다.", "초기화", () => {
+    localStorage.removeItem(STORAGE_KEY);
+    location.reload();
+  }, true);
+}
+
+function setPin(bid) {
+  openModal("<h3>" + branchName(bid) + " PIN 설정</h3><p>숫자 4~6자리. 잊으면 이 화면에서 해제할 수 없어 브라우저 저장을 지워야 합니다.</p>" +
+    '<input id="pinNew" type="password" inputmode="numeric" maxlength="8" placeholder="새 PIN">' +
+    '<div class="row"><button class="btn ghost wide" data-x="cancel">취소</button><button class="btn primary wide" data-x="ok">저장</button></div>',
+    host => {
+      const input = host.querySelector("#pinNew");
+      host.querySelector('[data-x="cancel"]').onclick = closeModal;
+      host.querySelector('[data-x="ok"]').onclick = () => {
+        if (!/^\d{4,6}$/.test(input.value)) { input.value = ""; input.placeholder = "4~6자리 숫자"; return; }
+        S.settings.pins = S.settings.pins || {};
+        S.settings.pins[bid] = hashPin(input.value);
+        saveState(); closeModal(); render(); toast("PIN을 설정했습니다.");
+      };
+    });
+}
+
+/* ---------- 업로드 ---------- */
+async function handleFiles(files) {
+  const fallback = document.getElementById("uploadBranch") ? document.getElementById("uploadBranch").value : "";
+  const results = [];
+  toast(files.length + "개 파일 확인 중…");
+  for (const file of files) {
+    try {
+      const branchGuess = findBranchFromName(file.name) || fallback || "";
+      const parsed = await parseFile(file, branchGuess);
+      if (!branchGuess && parsed.rows.some(r => !r.b)) {
+        const suggestions = Array.from(new Set(parsed.rows.map(r => r.b).filter(Boolean)));
+        throw new Error("지점을 알 수 없습니다. 위의 '지점 자동 인식이 안 될 때'에서 지점을 고르고 다시 올려 주세요." + (suggestions.length ? " (파일 안 지점: " + suggestions.join(", ") + ")" : ""));
+      }
+      const rows = parsed.rows;
+      // 파일 안에 지점 열이 있으면 그 값 사용
+      const branches = Array.from(new Set(rows.map(r => r.b)));
+      const branch = branchGuess || (branches.length === 1 ? branches[0] : "geondae");
+      if (!rows.length) throw new Error("거래 행이 없습니다.");
+      rows.forEach(r => { r.b = branchGuess && branches.length > 1 ? r.b : branch; });
+      const from = rows.reduce((a, r) => (r.d < a ? r.d : a), rows[0].d);
+      const to = rows.reduce((a, r) => (r.d > a ? r.d : a), rows[0].d);
+      const rev = rows.reduce((a, r) => a + (r.cash + r.card + r.bank + r.pay + r.etc + r.credit), 0);
+      results.push({
+        ok: true, name: file.name, branch, from, to, count: rows.length, rev,
+        skipped: parsed.skipped, rows
+      });
+    } catch (e) {
+      results.push({ ok: false, name: file.name, error: e.message });
+    }
+  }
+  const good = results.filter(r => r.ok);
+  const bad = results.filter(r => !r.ok);
+  if (!good.length) {
+    toast("업로드 실패: " + (bad[0] ? bad[0].error : "알 수 없는 오류"), true);
+    showUploadReport(results);
+    return;
+  }
+  const apply = () => {
+    const dupKey = f => f.name + "|" + f.count + "|" + f.from + "|" + f.to;
+    const existing = new Set(S.data.files.map(dupKey));
+    let added = 0, skippedDup = 0;
+    good.forEach(g => {
+      const rec = { id: uid(), name: g.name, branch: g.branch, from: g.from, to: g.to, count: g.count, rev: g.rev, skipped: g.skipped, rows: g.rows, at: Date.now() };
+      if (existing.has(dupKey(rec))) { skippedDup++; return; }
+      S.data.files.push(rec); existing.add(dupKey(rec)); added++;
+    });
+    S.data.source = "upload";
+    S.data.updatedAt = Date.now();
+    buildStats(); saveState();
+    if (S.stats.months.length) S.month = S.stats.months[S.stats.months.length - 1];
+    render();
+    toast(added + "개 파일 반영" + (skippedDup ? " · 중복 " + skippedDup + "건 제외" : "") + (bad.length ? " · 실패 " + bad.length + "건" : ""), !added);
+    if (bad.length) showUploadReport(results);
+  };
+  if (S.data.source === "sample") {
+    confirmModal("실제 자료로 전환",
+      "샘플 데이터를 지우고 방금 올린 <b>" + good.length + "개 파일</b>로 시작합니다.<br><br>" +
+      good.map(g => "· " + esc(g.name) + " → " + branchName(g.branch) + " · " + nfmt(g.count) + "행").join("<br>"),
+      "전환하기", apply);
+  } else {
+    apply();
+  }
+}
+
+function showUploadReport(results) {
+  const bad = results.filter(r => !r.ok);
+  if (!bad.length) return;
+  openModal("<h3>읽지 못한 파일</h3><p>아래 이유를 확인하고 다시 올려 주세요.</p>" +
+    '<div style="max-height:340px;overflow:auto;font-size:.95rem;line-height:1.7">' +
+    bad.map(b => "· <b>" + esc(b.name) + "</b><br><span class='muted'>" + esc(b.error) + "</span>").join("<br><br>") +
+    '</div><div class="row"><button class="btn primary wide" data-x="ok">확인</button></div>',
+    host => { host.querySelector('[data-x="ok"]').onclick = closeModal; });
+}
+
+/* ---------- 백업 ---------- */
+function exportBackup() {
+  const payload = {
+    version: APP_VERSION, exportedAt: new Date().toISOString(),
+    data: { source: S.data.source, files: S.data.files },
+    pl: S.pl, checklist: S.checklist, settings: S.settings
+  };
+  const blob = new Blob([JSON.stringify(payload)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "ATLANC_POS_백업_" + new Date().toISOString().slice(0, 10) + ".json";
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 3000);
+  toast("백업 파일을 내려받았습니다.");
+}
+function importBackup(file) {
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const p = JSON.parse(reader.result);
+      if (!p.data && !p.pl) throw new Error("형식이 맞지 않습니다.");
+      confirmModal("백업 가져오기", "현재 자료를 덮어씁니다.", "가져오기", () => {
+        S.data = { source: p.data && p.data.source === "upload" ? "upload" : "sample", files: (p.data && p.data.files) || [], updatedAt: Date.now() };
+        S.pl = p.pl || {}; S.checklist = p.checklist || {}; S.settings = Object.assign(S.settings, p.settings || {});
+        buildStats(); saveState(); render(); toast("가져왔습니다.");
+      }, true);
+    } catch (e) { toast("가져오기 실패: " + e.message, true); }
+  };
+  reader.readAsText(file);
+}
+
+/* ---------- 부트 ---------- */
+function loadSheetJS() {
+  const s = document.createElement("script");
+  s.src = "https://cdn.sheetjs.com/xlsx-0.20.3/package/dist/xlsx.full.min.js";
+  s.async = true;
+  s.onerror = () => { window.__xlsxFailed = true; };
+  document.head.appendChild(s);
+}
+
+function boot() {
+  loadState();
+  loadSheetJS();
+  renderLogin();
+  document.getElementById("loginSampleBtn").onclick = () => {
+    if (S.data.source !== "sample") {
+      confirmModal("샘플로 보기", "샘플로 전환하면 업로드 자료가 화면에서 빠집니다(삭제는 '데이터' 탭에서).", "샘플로 보기", () => {
+        S.data = { source: "sample", files: S.data.files, updatedAt: Date.now() };
+        S.stats = null; renderLogin(); enterApp("hq");
+      });
+    } else enterApp("hq");
+  };
+  document.getElementById("logoutBtn").onclick = logout;
+  document.getElementById("branchSelect").onchange = e => {
+    if (S.sessionRole !== "hq") return;
+    S.role = e.target.value;
+    document.getElementById("sideBranchName").textContent = branchName(S.role);
+    document.getElementById("sideWho").textContent = roleLabel();
+    saveState(); render();
+  };
+  document.querySelectorAll(".nav-item").forEach(b => {
+    b.onclick = () => { S.view = b.getAttribute("data-view"); saveState(); render(); };
+  });
+  document.getElementById("prevMonth").onclick = () => { S.month = addMonths(S.month, -1); saveState(); render(); };
+  document.getElementById("nextMonth").onclick = () => { S.month = addMonths(S.month, 1); saveState(); render(); };
+  const pr = document.getElementById("printBtn");
+  if (pr) pr.onclick = () => window.print();
+  // 문서 전체 단축키
+  window.addEventListener("keydown", e => {
+    if (!S.role) return;
+    if (e.target && /INPUT|TEXTAREA|SELECT/.test(e.target.tagName)) return;
+    if (e.key === "ArrowLeft") { document.getElementById("prevMonth").click(); }
+    if (e.key === "ArrowRight") { document.getElementById("nextMonth").click(); }
+  });
+}
+boot();
+
+</script>
+</body>
+</html>
