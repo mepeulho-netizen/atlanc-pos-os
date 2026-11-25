@@ -2000,7 +2000,7 @@ function viewDesigner() {
         '<td class="num">' + won(Math.round(r.avgTicket)) + "</td>" +
         '<td class="num">' + nfmt(r.newC) + "</td>" +
         '<td class="num">' + pct(r.newRate) + "</td>" +
-        "<td>" + (r.prevRev === null ? '<span class="delta none">—</span>' : deltaChip(r.rev, r.prevRev)) + "</td>" +
+        "<td>" + (r.prevRev === null ? '<span class="delta none">—</span>' : deltaChip(r.rev / curDays, r.prevRev / Math.max(1, r.prevDays))) + "</td>" +
         "<td>" + status + "</td></tr>";
     }).join("") +
     '<tr class="total"><td>합계</td><td class="num">' + won(m.service) + '</td><td class="num">100%</td><td class="num">' + nfmt(m.visits) + '</td><td class="num">' + nfmt(m.dzSumCust) + '명*</td><td class="num">' + won(Math.round(m.avgTicket)) + '</td><td class="num">' + nfmt(m.newCust) + '</td><td class="num">—</td><td>—</td><td></td></tr>' +
